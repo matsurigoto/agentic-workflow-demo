@@ -300,7 +300,7 @@ public class TaskService {
      * Get tasks assigned to a user
      */
     public List<Task> getTasksByAssignee(Long userId) {
-        return taskRepository.findByAssignee_id(userId);
+        return taskRepository.findByAssigneeId(userId);
     }
     
     /**

@@ -12,7 +12,10 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     
     List<Task> findByStatus(int status);
     
-    List<Task> findByAssignee_id(Long assigneeId);
+    // FIXME: findByAssignee_id doesn't work because of snake_case field naming
+    // Had to use @Query as workaround - filed as TASK-1089
+    @Query("SELECT t FROM Task t WHERE t.assignee_id = ?1")
+    List<Task> findByAssigneeId(Long assigneeId);
     
     List<Task> findByProjectCode(String projectCode);
     
