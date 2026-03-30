@@ -101,7 +101,6 @@ public class TaskServiceTest {
     }
     
     @Test
-    @Disabled("Disabled - causes division by zero exception when run in isolation")
     public void testGetTaskStatistics() {
         Map<String, Object> stats = taskService.getTaskStatistics();
         assertNotNull(stats);

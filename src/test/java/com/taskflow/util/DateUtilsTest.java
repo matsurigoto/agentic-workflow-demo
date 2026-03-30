@@ -66,7 +66,6 @@ public class DateUtilsTest {
     }
     
     @Test
-    @Disabled("Known bug: returns 0-3 instead of 1-4")
     public void testGetQuarter() {
         Calendar cal = Calendar.getInstance();
         cal.set(2024, Calendar.JANUARY, 15);
