@@ -2,11 +2,6 @@ name: Setup Demo Issues
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - 'copilot/**'
-    paths:
-      - '.github/workflows/setup-demo-issues.yml'
 
 permissions:
   issues: write
