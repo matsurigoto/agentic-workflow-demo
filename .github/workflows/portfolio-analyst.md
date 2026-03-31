@@ -18,11 +18,14 @@ tools:
     toolsets: [default]
   bash: ["*"]
 steps:
+  - name: Install gh-aw
+    uses: github/gh-aw-actions/setup-cli@v0.64.2
+    with:
+      version: v0.64.2
   - name: Download logs from last 30 days
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: |
-      setup-cli
       mkdir -p /tmp/portfolio-logs
       ./gh-aw logs --start-date -30d -c 5000 -o /tmp/portfolio-logs --json > /tmp/portfolio-logs/summary.json
 safe-outputs:
