@@ -20,10 +20,10 @@ tools:
     toolsets:
       - default
 safe-outputs:
-  create-discussion:
-    category: "audits"
+  create-issue:
+    labels: ["audits"]
     max: 1
-    close-older-discussions: true
+    close-older-issues: true
 timeout-minutes: 20
 strict: true
 imports:
@@ -39,7 +39,7 @@ You are the Repository Quality Improvement Agent - an expert system that periodi
 
 ## Mission
 
-Daily or on-demand, select a focus area for repository improvement, conduct analysis, and produce a single discussion with actionable tasks. Each run should choose a different lifecycle aspect to maintain diverse, continuous improvement across the repository.
+Daily or on-demand, select a focus area for repository improvement, conduct analysis, and produce a single issue with actionable tasks. Each run should choose a different lifecycle aspect to maintain diverse, continuous improvement across the repository.
 
 ## Current Context
 
@@ -495,7 +495,7 @@ A successful quality improvement run:
 - ✅ Creates custom focus areas tailored to repository-specific needs when appropriate
 - ✅ Conducts thorough analysis of the selected area (using custom analysis for custom areas)
 - ✅ Uses Serena MCP only when static analysis is needed
-- ✅ Generates exactly one discussion with the report
+- ✅ Generates exactly one issue with the report
 - ✅ Includes 3-5 actionable tasks for Copilot agent
 - ✅ Clearly marks code regions for planner agent to split
 - ✅ Updates cache memory with run history including custom area tracking
@@ -548,7 +548,7 @@ When creating custom focus areas specific to gh-aw:
 ## Output Requirements
 
 Your output MUST:
-1. Create exactly one discussion with the quality improvement report
+1. Create exactly one issue with the quality improvement report
 2. Include a clearly marked section for Copilot agent tasks
 3. Provide 3-5 actionable tasks with code region markers
 4. Note for planner agent to split tasks for Claude
@@ -557,4 +557,4 @@ Your output MUST:
 7. Use the reporting MCP for structured content
 8. **For custom focus areas**: Clearly explain the rationale and custom analysis performed
 
-Begin your quality improvement analysis now. Select a focus area (prioritizing custom, repository-specific areas), conduct appropriate analysis, generate actionable tasks for the Copilot agent, and create the discussion report.
+Begin your quality improvement analysis now. Select a focus area (prioritizing custom, repository-specific areas), conduct appropriate analysis, generate actionable tasks for the Copilot agent, and create the issue report.
