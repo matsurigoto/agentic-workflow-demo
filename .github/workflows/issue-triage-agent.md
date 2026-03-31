@@ -5,7 +5,7 @@ on:
   schedule: daily
   workflow_dispatch:
 permissions:
-  issues: write
+  issues: read
 tools:
   github:
     # For now we are enabling lockdown mode for this workflow since it processes issues from the public repo and we want to ensure it only processes trusted input from maintainers.
