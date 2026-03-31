@@ -2,6 +2,12 @@ name: Setup Demo Issues
 
 on:
   workflow_dispatch:
+    inputs:
+      recreate:
+        description: 'Force recreate demo issues even if issues already exist'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   issues: write
@@ -17,13 +23,18 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          EXISTING=$(gh issue list --repo ${{ github.repository }} --state all --limit 1 --json number --jq 'length')
-          if [ "$EXISTING" -gt "0" ]; then
-            echo "Issues already exist. Skipping creation to avoid duplicates."
-            echo "To recreate, close/delete all existing issues first."
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-          else
+          if [ "${{ inputs.recreate }}" = "true" ]; then
+            echo "Force recreate requested. Skipping duplicate check."
             echo "skip=false" >> "$GITHUB_OUTPUT"
+          else
+            EXISTING=$(gh issue list --repo ${{ github.repository }} --state all --limit 1 --json number --jq 'length')
+            if [ "$EXISTING" -gt "0" ]; then
+              echo "Issues already exist. Skipping creation to avoid duplicates."
+              echo "To recreate, run this workflow with 'recreate' set to true."
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "skip=false" >> "$GITHUB_OUTPUT"
+            fi
           fi
 
       - name: Create demo issues from JSON
