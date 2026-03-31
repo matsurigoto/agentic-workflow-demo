@@ -1,0 +1,122 @@
+[
+  {
+    "title": "🔴 [BUG] SQL Injection vulnerability in /api/tasks/search endpoint",
+    "body": "## Description\nThe `/api/tasks/search` endpoint is vulnerable to SQL injection.\nThe keyword parameter is directly concatenated into SQL query string in `DatabaseHelper.java`.\n\n## Steps to Reproduce\n1. Call `GET /api/tasks/search?keyword=' OR 1=1 --`\n2. All tasks are returned regardless of search term\n\n## Expected Behavior\nThe search should use parameterized queries and reject malicious input.\n\n## Actual Behavior\nThe raw SQL query is executed, allowing data exfiltration.\n\n## Impact\n**CRITICAL** - Full database access possible through SQL injection.\n\n## Files Affected\n- `src/main/java/com/taskflow/util/DatabaseHelper.java` (line 55-62)\n- `src/main/java/com/taskflow/service/TaskService.java` (searchTasks method)"
+  },
+  {
+    "title": "🔴 [BUG] Passwords stored in plaintext in User entity",
+    "body": "## Description\nUser passwords are stored in plaintext in the database. The `User` entity stores the raw password string and the `authenticate()` method compares plaintext values.\n\n## Impact\n**CRITICAL** - If the database is compromised, all user passwords are immediately exposed.\n\n## Expected Behavior\nPasswords should be hashed using bcrypt or similar before storage.\n\n## Files Affected\n- `src/main/java/com/taskflow/model/User.java`\n- `src/main/java/com/taskflow/service/UserService.java`\n- `src/main/java/com/taskflow/config/DataInitializer.java`\n\nFound by: Security audit 2023-Q4"
+  },
+  {
+    "title": "🔴 [BUG] ArithmeticException: Division by zero on empty project dashboard",
+    "body": "## Description\nWhen a project has 0 tasks, the dashboard endpoint throws `ArithmeticException: / by zero`.\n\n## Stack Trace\n```\njava.lang.ArithmeticException: / by zero\n    at com.taskflow.model.Project.getProgress(Project.java:98)\n    at com.taskflow.controller.ProjectController.getProjectDashboard(ProjectController.java:82)\n```\n\n## Steps to Reproduce\n1. Create a new project with no tasks\n2. Call `GET /api/projects/{id}/dashboard`\n\n## Environment\n- Production\n- Frequency: Every time for new projects\n\n## Files Affected\n- `src/main/java/com/taskflow/model/Project.java` (getProgress method)"
+  },
+  {
+    "title": "🔴 [BUG] Intermittent date parsing errors under high load (thread-safety)",
+    "body": "## Description\nIn production, we see intermittent `NumberFormatException` and `ArrayIndexOutOfBoundsException` from `DateUtils.parseDate()`.\n\n## Stack Trace\n```\njava.lang.NumberFormatException: For input string: \"\"\n    at java.text.SimpleDateFormat.parse(SimpleDateFormat.java:...)\n    at com.taskflow.util.DateUtils.parseDate(DateUtils.java:35)\n```\n\n## Root Cause (Suspected)\n`DateUtils` uses static `SimpleDateFormat` instances which are NOT thread-safe. Under concurrent access (>100 requests), the internal state gets corrupted.\n\n## Workaround\nRestart the server when it happens.\n\n## Files Affected\n- `src/main/java/com/taskflow/util/DateUtils.java` (static SimpleDateFormat fields)"
+  },
+  {
+    "title": "🔴 [BUG] NullPointerException in Task.toString() crashes batch jobs",
+    "body": "## Description\nGetting NPE when logging tasks that don't have an assignee or due date.\n\n## Stack Trace\n```\njava.lang.NullPointerException\n    at com.taskflow.model.Task.toString(Task.java:98)\n```\n\n## Impact\nThis crashes several batch jobs that log task details.\n\n## Files Affected\n- `src/main/java/com/taskflow/model/Task.java` (toString method)"
+  },
+  {
+    "title": "🔴 [BUG] getQuarter() returns 0-3 instead of 1-4 (off-by-one bug)",
+    "body": "## Description\nThe `DateUtils.getQuarter()` method returns quarter values 0-3 instead of the expected 1-4.\n\nJanuary returns 0 instead of 1, April returns 1 instead of 2, etc.\n\n## Root Cause\n`Calendar.MONTH` is 0-based (0=January). The calculation `month / 3` gives 0-3. It should be `(month / 3) + 1`.\n\n## Test\n`testGetQuarter` in `DateUtilsTest.java` was previously disabled due to this bug and is now enabled, causing CI failure.\n\n## Files Affected\n- `src/main/java/com/taskflow/util/DateUtils.java` (getQuarter method, line ~128)"
+  },
+  {
+    "title": "🟠 [BUG] StringUtils.padRight() throws StringIndexOutOfBoundsException",
+    "body": "## Description\n`StringUtils.padRight()` throws `StringIndexOutOfBoundsException` when the input string is longer than the target length.\n\n## Steps to Reproduce\n```java\nStringUtils.padRight(\"long string\", 5); // throws exception\n```\n\n## Expected Behavior\nShould return the original string (or truncate) when input is longer than target length.\n\n## Files Affected\n- `src/main/java/com/taskflow/util/StringUtils.java` (padRight method)"
+  },
+  {
+    "title": "🟠 [BUG] StringUtils.sanitize() is bypassable with encoded XSS payloads",
+    "body": "## Description\nThe custom `sanitize()` method in StringUtils only removes `<script>` tags but doesn't handle:\n- `<img onerror=...>` payloads\n- Event handlers (`onload`, `onmouseover`, etc.)\n- URL-encoded payloads\n- HTML entity-encoded payloads\n\n## Impact\nXSS attacks are possible through multiple vectors.\n\n## Recommendation\nReplace with OWASP Java HTML Sanitizer or use Apache Commons Text `StringEscapeUtils`.\n\n## Files Affected\n- `src/main/java/com/taskflow/util/StringUtils.java` (sanitize method)"
+  },
+  {
+    "title": "🟡 [FEATURE] Need API pagination - OOM in production",
+    "body": "## Description\n`GET /api/tasks` returns ALL tasks. We now have 50,000+ tasks and this endpoint causes `OutOfMemoryError` in production.\n\n## Requirements\n- Add pagination support (`page`, `size` parameters) on all list endpoints\n- Default page size: 20\n- Max page size: 100\n- Return total count in response headers\n\n## Impact\nProduction servers crash regularly when this endpoint is called.\n\n## Files Affected\n- `src/main/java/com/taskflow/controller/TaskController.java`\n- `src/main/java/com/taskflow/service/TaskService.java`\n- `src/main/java/com/taskflow/repository/TaskRepository.java`"
+  },
+  {
+    "title": "🟡 [FEATURE] Need proper authentication and authorization",
+    "body": "## Description\nCurrently there is no authentication middleware. Any request can access any endpoint. The login endpoint returns a fake JWT token.\n\n## Requirements\n- Proper JWT authentication with Spring Security\n- Role-based access control (ADMIN, USER, VIEWER)\n- Endpoint-level authorization\n- Password hashing (related to issue #2)\n\n## Priority\nHigh - compliance audit coming in Q2\n\n## Files Affected\n- `src/main/java/com/taskflow/controller/UserController.java`\n- `src/main/java/com/taskflow/config/WebConfig.java`\n- Need new: `SecurityConfig.java`, `JwtFilter.java`"
+  },
+  {
+    "title": "🟡 [FEATURE] Upgrade Spring Boot from 2.7 to 3.x",
+    "body": "## Description\nSpring Boot 2.7.x reached End of Life. We need to upgrade to Spring Boot 3.x.\n\n## Migration Requirements\n- Migrate from `javax.*` to `jakarta.*` namespace\n- Update Java version requirement to 17+\n- Review all deprecated API usage\n- Update Spring Security configuration (if added)\n- Test all endpoints after migration\n\n## Current State\n- Spring Boot: 2.7.18 (EOL)\n- Java: 11 (needs upgrade to 17+)\n\n## Files Affected\n- `pom.xml`\n- All Java files using `javax.*` imports"
+  },
+  {
+    "title": "🟡 [FEATURE] Add API documentation with Swagger/OpenAPI",
+    "body": "## Description\nThere is no API documentation. Developers rely on reading source code to understand endpoints.\n\n## Requirements\n- Add SpringDoc OpenAPI (swagger-ui)\n- Document all REST endpoints\n- Include request/response examples\n- Add API versioning information\n\n## Acceptance Criteria\n- Swagger UI available at `/swagger-ui.html`\n- All endpoints documented with descriptions\n- Request/response schemas visible"
+  },
+  {
+    "title": "🟡 [FEATURE] Add input validation on all API endpoints",
+    "body": "## Description\nNo input validation exists on any API endpoint. Tasks can be created with null titles, negative priorities, and invalid status codes.\n\n## Requirements\n- Add Bean Validation annotations (`@NotNull`, `@Size`, `@Min`, `@Max`)\n- Add `@Valid` on controller method parameters\n- Return proper 400 Bad Request responses with validation error details\n- Validate status transitions\n- Validate priority range (1-5)\n\n## Files Affected\n- `src/main/java/com/taskflow/model/Task.java`\n- `src/main/java/com/taskflow/model/User.java`\n- `src/main/java/com/taskflow/model/Project.java`\n- All controllers"
+  },
+  {
+    "title": "🟡 [FEATURE] Add proper error handling and consistent HTTP status codes",
+    "body": "## Description\nError handling is inconsistent across the API. Some errors return 500 with stack traces, others return null, and some throw uncaught exceptions.\n\n## Requirements\n- Add `@ControllerAdvice` for global exception handling\n- Return proper HTTP status codes (400, 404, 409, 422, 500)\n- Consistent error response format (code, message, details)\n- Never expose stack traces in production\n- Log all errors with correlation IDs\n\n## Files Affected\n- Need new: `GlobalExceptionHandler.java`\n- All controllers need review"
+  },
+  {
+    "title": "🟡 [FEATURE] Add database migration tool (Flyway/Liquibase)",
+    "body": "## Description\nDatabase schema changes are managed by Hibernate `ddl-auto=update`, which is dangerous in production. No migration history, no rollback capability.\n\n## Requirements\n- Add Flyway or Liquibase for database migration management\n- Create initial migration from current schema\n- Set `ddl-auto=validate` in production\n- Migration scripts for all future schema changes\n\n## Impact\nWithout this, any schema change risks data loss in production."
+  },
+  {
+    "title": "🟠 [TECH DEBT] TaskService is a God Class (670+ lines) - needs refactoring",
+    "body": "## Description\n`TaskService.java` is a God Class with 670+ lines handling 8+ responsibilities:\n- CRUD operations\n- Task assignment\n- Status workflow/transitions\n- Notifications (inline, not using NotificationService)\n- Statistics/reporting\n- Import/export (CSV)\n- Sprint management\n- Search\n\n## Impact\n- Impossible to write proper unit tests\n- Hard to understand the code\n- Every change risks breaking something else\n- High cyclomatic complexity\n\n## Recommendation\nBreak into separate services:\n- `TaskCrudService`\n- `TaskWorkflowService`\n- `TaskNotificationService`\n- `TaskReportingService`\n- `TaskImportExportService`\n\n## Files Affected\n- `src/main/java/com/taskflow/service/TaskService.java`"
+  },
+  {
+    "title": "🟠 [TECH DEBT] Replace custom StringUtils with Apache Commons Lang",
+    "body": "## Description\nWe have a custom `StringUtils` class that duplicates functionality already available in Apache Commons Lang 3 (which is already in our dependencies!).\n\nOur version has known bugs:\n- `sanitize()` is trivially bypassable (see issue #8)\n- `padRight()` throws StringIndexOutOfBoundsException (see issue #7)\n- `toSnakeCase()` doesn't handle consecutive uppercase letters\n\n## Recommendation\nDelete our custom version and use `org.apache.commons.lang3.StringUtils` directly.\n\n## Files Affected\n- `src/main/java/com/taskflow/util/StringUtils.java` (to be removed)\n- All files importing our custom StringUtils"
+  },
+  {
+    "title": "🔴 [TECH DEBT] Remove hardcoded credentials from source code",
+    "body": "## Description\nFound hardcoded credentials in multiple files:\n\n| File | Type | Detail |\n|------|------|--------|\n| `application.properties` | DB password | Commented-out production password (never rotated!) |\n| `DatabaseHelper.java` | DB credentials | Static fields with username/password |\n| `NotificationService.java` | SMTP password | Hardcoded email credentials |\n| `NotificationService.java` | Slack webhook | Hardcoded webhook URL |\n| `DataInitializer.java` | User passwords | Plaintext passwords for seed data |\n| `application.properties` | JWT secret | Hardcoded signing key |\n\n## Impact\n**CRITICAL** - Credentials in source code are a major security risk. Production DB password was accidentally committed and never rotated.\n\n## Recommendation\nMove all secrets to environment variables or a secrets manager (e.g., AWS Secrets Manager, HashiCorp Vault)."
+  },
+  {
+    "title": "🟠 [TECH DEBT] DatabaseHelper uses raw JDBC - should use Spring Data JPA",
+    "body": "## Description\n`DatabaseHelper.java` contains raw JDBC code that:\n1. Concatenates user input directly into SQL strings (SQL injection)\n2. Never closes ResultSet, Statement, or Connection objects (resource leaks)\n3. Provides an `executeQuery()` method that runs arbitrary SQL\n4. Uses thread-unsafe singleton pattern for connections\n\n## Recommendation\nThis class should be completely removed and replaced with Spring Data JPA repositories (which already exist in the project).\n\n## Files Affected\n- `src/main/java/com/taskflow/util/DatabaseHelper.java` (to be removed)\n- `src/main/java/com/taskflow/service/TaskService.java` (uses DatabaseHelper)"
+  },
+  {
+    "title": "🟠 [TECH DEBT] Test suite is unreliable - disabled tests, no assertions, no cleanup",
+    "body": "## Description\nOur test suite has multiple problems:\n\n- **7 tests are `@Disabled`** because they were 'flaky' or 'TODO'\n- **Several tests have no assertions** (inflate coverage numbers)\n- **No `@BeforeEach` cleanup** - tests interfere with each other\n- **Depend on DataInitializer data** - fragile and breaks when seed data changes\n- **0% coverage on controllers**\n- **0% coverage on security-critical code paths**\n- Estimated effective test coverage: **<10%**\n\n## Requirements\n- Fix or properly implement all disabled tests\n- Add meaningful assertions to assertion-less tests\n- Add `@BeforeEach` cleanup to prevent test interference\n- Add controller tests (integration tests)\n- Add security-related test cases\n- Target: >60% meaningful test coverage\n\n## Files Affected\n- `src/test/java/com/taskflow/service/TaskServiceTest.java`\n- `src/test/java/com/taskflow/util/DateUtilsTest.java`\n- `src/test/java/com/taskflow/util/StringUtilsTest.java`"
+  },
+  {
+    "title": "🟠 [TECH DEBT] Inconsistent naming conventions throughout codebase",
+    "body": "## Description\nThe codebase mixes naming conventions inconsistently:\n\n| Convention | Examples |\n|-----------|----------|\n| camelCase | `reporterId`, `projectCode`, `createdDate` |\n| snake_case | `assignee_id`, `due_date`, `created_at`, `phone_number` |\n| Mixed fields | `full_name` vs `firstName`/`lastName` |\n| Mixed getters | `getOwner_id()` vs `getCode()` |\n\n## Impact\n- Code is confusing to read\n- API responses have inconsistent field names\n- New developers make wrong assumptions\n\n## Recommendation\nStandardize on Java camelCase convention for all fields and methods. Use `@Column(name=...)` for database mapping where needed."
+  },
+  {
+    "title": "🟠 [TECH DEBT] Dead code and deprecated methods should be removed",
+    "body": "## Description\nFound several pieces of dead code:\n\n- `TaskService.getOldDashboardStats()` - deprecated, referenced by decommissioned admin panel\n- `TaskService.migrateLegacyIds()` - was for JIRA migration in 2019\n- `TaskService.generateWeeklyReport()` - replaced by dashboard\n- `Task.workflow_state` field - from old workflow engine\n- `Task.legacy_id` field - from JIRA migration\n- `Project.color`/`icon` fields - from old dashboard\n\n## Impact\nDead code adds confusion and maintenance burden. New developers waste time understanding unused code.\n\n## Files Affected\n- `src/main/java/com/taskflow/service/TaskService.java`\n- `src/main/java/com/taskflow/model/Task.java`\n- `src/main/java/com/taskflow/model/Project.java`"
+  },
+  {
+    "title": "🟠 [TECH DEBT] CORS is wide open - needs proper configuration",
+    "body": "## Description\n`WebConfig.java` has CORS configured to allow ALL origins (`*`), ALL methods, and ALL headers. This was a 'temporary fix' that was never addressed.\n\n```java\n// FIXME: This is too permissive\nregistry.addMapping(\"/**\")\n        .allowedOrigins(\"*\")\n        .allowedMethods(\"*\")\n        .allowedHeaders(\"*\");\n```\n\n## Impact\nAny website can make API calls to our backend, enabling CSRF attacks and data theft.\n\n## Recommendation\nRestrict CORS to specific allowed origins (frontend domain), specific HTTP methods, and required headers.\n\n## Files Affected\n- `src/main/java/com/taskflow/config/WebConfig.java`"
+  },
+  {
+    "title": "🟠 [TECH DEBT] Jackson version conflict with Spring Boot parent",
+    "body": "## Description\nThe `pom.xml` explicitly declares Jackson Databind 2.13.0, which conflicts with the version managed by Spring Boot 2.7.18 parent POM.\n\n```xml\n<!-- FIXME: jackson version conflict with spring boot parent -->\n<dependency>\n    <groupId>com.fasterxml.jackson.core</groupId>\n    <artifactId>jackson-databind</artifactId>\n    <version>2.13.0</version>\n</dependency>\n```\n\n## Impact\n- Potential runtime `NoSuchMethodError` or `ClassNotFoundException`\n- Spring Boot's Jackson auto-configuration may not work correctly\n- Security patches from Spring Boot parent POM are overridden\n\n## Recommendation\nRemove the explicit version and let Spring Boot manage the Jackson version.\n\n## Files Affected\n- `pom.xml`"
+  },
+  {
+    "title": "🟠 [TECH DEBT] Thread-unsafe singleton pattern in DatabaseHelper",
+    "body": "## Description\n`DatabaseHelper.java` uses a lazy singleton pattern without synchronization:\n\n```java\nprivate static Connection connection = null;\npublic static Connection getConnection() {\n    if (connection == null) {\n        connection = DriverManager.getConnection(...);\n    }\n    return connection;\n}\n```\n\n## Impact\n- Race condition: multiple threads can create multiple connections\n- Shared connection across threads without synchronization\n- Connection may be closed by one thread while another is using it\n\n## Files Affected\n- `src/main/java/com/taskflow/util/DatabaseHelper.java`"
+  },
+  {
+    "title": "🟡 [DEVOPS] Add code coverage reporting (JaCoCo)",
+    "body": "## Description\nThere is no code coverage reporting configured. We have no visibility into which code is tested and which is not.\n\n## Requirements\n- Add JaCoCo Maven plugin\n- Generate coverage reports on CI builds\n- Set minimum coverage thresholds (start with 30%, increase over time)\n- Upload coverage reports as CI artifacts\n- Consider adding Codecov or similar for PR coverage checks\n\n## Files Affected\n- `pom.xml` (add JaCoCo plugin)\n- `.github/workflows/ci.yml` (add coverage step)"
+  },
+  {
+    "title": "🟡 [DEVOPS] Add static code analysis (SpotBugs/Checkstyle)",
+    "body": "## Description\nNo static code analysis tools are configured. Bugs, style violations, and potential issues are only caught during code review (if at all).\n\n## Requirements\n- Add SpotBugs Maven plugin for bug detection\n- Add Checkstyle for code style enforcement\n- Configure rules appropriate for the project\n- Run as part of CI pipeline\n- Fail build on critical findings\n\n## Files Affected\n- `pom.xml`\n- `.github/workflows/ci.yml`\n- New: checkstyle config file"
+  },
+  {
+    "title": "🟠 [DEVOPS] mysql-connector-java dependency included but unused",
+    "body": "## Description\nThe `pom.xml` includes `mysql-connector-java` (8.0.28) but the application uses H2 in-memory database. MySQL is not configured or used.\n\n```xml\n<!-- TODO: someone added mysql but we never use it in prod -->\n<dependency>\n    <groupId>mysql</groupId>\n    <artifactId>mysql-connector-java</artifactId>\n    <version>8.0.28</version>\n</dependency>\n```\n\n## Impact\n- Unnecessary dependency increases build size\n- Potential security risk from unused library\n- Confusing for developers\n\n## Recommendation\nRemove the MySQL dependency. Add it back when/if MySQL support is actually needed, with a proper database profile.\n\n## Files Affected\n- `pom.xml`"
+  },
+  {
+    "title": "💬 [DISCUSSION] Should we move to microservices?",
+    "body": "## Context\nWith all the coupling issues in our monolith, should we consider breaking this into microservices?\n\n## Arguments For\n- TaskService is too coupled to everything\n- Scaling issues with the monolith\n- Team velocity is decreasing\n- Independent deployment of components\n\n## Arguments Against\n- We're a small team (3 people)\n- Added operational complexity (K8s, service mesh, distributed tracing)\n- Migration effort is significant\n- Risk of distributed monolith\n\n## Questions\n1. What would the service boundaries be?\n2. Do we have the infrastructure knowledge?\n3. What's the migration timeline?\n\nLooking for discussion before we decide.\n\ncc: @kevin @jennifer @david"
+  },
+  {
+    "title": "💬 [DISCUSSION] Log4j 1.x still in use - security risk assessment needed",
+    "body": "## Context\nWe're still using Log4j 1.x (version 1.2.17) which has been EOL since 2015.\n\nWhile this is **NOT** the same as the Log4Shell vulnerability (CVE-2021-44228, which affected Log4j 2.x), it still has known CVEs and receives no security patches:\n- CVE-2019-17571 (deserialization in SocketServer)\n- CVE-2022-23302 (JMSSink)\n- CVE-2022-23305 (JDBCAppender SQL injection)\n- CVE-2022-23307 (Chainsaw deserialization)\n\n## Questions\n1. Should we prioritize migrating to Logback/SLF4J?\n2. Are we using any of the vulnerable components?\n3. What's the migration effort?\n\nThis was supposed to be done in 2022 (see task in backlog).\n\n## Files Affected\n- `pom.xml` (log4j dependency)\n- All files using log4j imports"
+  }
+]
