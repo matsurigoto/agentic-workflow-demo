@@ -5,6 +5,11 @@
       "version": "v8",
       "sha": "ed597411d8f924073f98dfc5c65a23a2325f34cd"
     },
+    "actions/upload-artifact@v6": {
+      "repo": "actions/upload-artifact",
+      "version": "v6",
+      "sha": "b7c566a772e6b6bfb58ed0dc250532a479d7789f"
+    },
     "github/gh-aw-actions/setup-cli@v0.64.2": {
       "repo": "github/gh-aw-actions/setup-cli",
       "version": "v0.64.2",
