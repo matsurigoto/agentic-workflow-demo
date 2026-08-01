@@ -118,14 +118,13 @@ public class DateUtils {
     }
     
     /**
-     * Get quarter from date
-     * BUG: off by one - January should be Q1 but returns Q0
+     * Get quarter from date (1-4)
      */
     public static int getQuarter(Date date) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
         int month = cal.get(Calendar.MONTH); // 0-based
-        return month / 3; // BUG: returns 0-3 instead of 1-4
+        return (month / 3) + 1; // Returns 1-4
     }
     
     /**
