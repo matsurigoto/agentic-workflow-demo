@@ -90,5 +90,58 @@ public class StringUtilsTest {
         assertEquals("", StringUtils.join(new String[]{}, ","));
     }
     
-    // No test for padRight - it has a known StringIndexOutOfBoundsException bug
+    // --- padRight regression tests ---
+
+    @Test
+    public void testPadRightNormalCase() {
+        assertEquals("hi   ", StringUtils.padRight("hi", 5));
+    }
+
+    @Test
+    public void testPadRightExactWidth() {
+        assertEquals("hello", StringUtils.padRight("hello", 5));
+    }
+
+    @Test
+    public void testPadRightNullInput() {
+        // null should be treated as empty string
+        assertEquals("     ", StringUtils.padRight(null, 5));
+    }
+
+    /**
+     * BUG (issue #8): padRight() throws StringIndexOutOfBoundsException when
+     * str.length() > width. The expression `new char[width - str.length()]`
+     * uses a negative array size when the string is longer than the requested width.
+     */
+    @Test
+    public void testPadRightStringLongerThanWidth() {
+        // "toolong" (7 chars) padded to width 3 should either truncate or return as-is
+        // Currently throws StringIndexOutOfBoundsException (negative array size)
+        assertDoesNotThrow(() -> StringUtils.padRight("toolong", 3),
+            "BUG #8: padRight() throws StringIndexOutOfBoundsException when str.length() > width");
+    }
+
+    // --- Additional edge case tests for existing methods ---
+
+    @Test
+    public void testIsEmptyWhitespace() {
+        // whitespace-only is NOT empty (isEmpty checks length, not blank)
+        assertFalse(StringUtils.isEmpty("   "),
+            "isEmpty() should return false for whitespace-only strings (use isBlank() for that)");
+    }
+
+    @Test
+    public void testToSnakeCaseNull() {
+        assertNull(StringUtils.toSnakeCase(null));
+    }
+
+    @Test
+    public void testToSnakeCaseConsecutiveUppercase() {
+        // Documents the known bug: "HTMLParser" -> "h_t_m_l_parser" instead of "html_parser"
+        String result = StringUtils.toSnakeCase("HTMLParser");
+        // The correct output should be "html_parser", but the current implementation
+        // inserts underscores between each uppercase letter
+        assertNotEquals("html_parser", result,
+            "BUG: toSnakeCase() does not handle consecutive uppercase letters - produces h_t_m_l_parser instead of html_parser");
+    }
 }
