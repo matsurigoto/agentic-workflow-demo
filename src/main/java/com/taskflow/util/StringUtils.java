@@ -9,20 +9,12 @@ package com.taskflow.util;
  */
 public class StringUtils {
     
-    /**
-     * Check if string is null or empty
-     * NOTE: Apache Commons already has this as StringUtils.isEmpty()
-     */
     public static boolean isEmpty(String str) {
-        return str == null || str.length() == 0;
+        return str == null || str.isEmpty();
     }
     
-    /**
-     * Check if string is null, empty, or whitespace
-     * NOTE: Apache Commons already has this as StringUtils.isBlank()
-     */
     public static boolean isBlank(String str) {
-        return str == null || str.trim().length() == 0;
+        return str == null || str.trim().isEmpty();
     }
     
     /**
@@ -114,17 +106,9 @@ public class StringUtils {
     
     /**
      * Join array of strings with delimiter
-     * NOTE: String.join() has existed since Java 8...
      */
     public static String join(String[] arr, String delimiter) {
         if (arr == null || arr.length == 0) return "";
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < arr.length; i++) {
-            sb.append(arr[i]);
-            if (i < arr.length - 1) {
-                sb.append(delimiter);
-            }
-        }
-        return sb.toString();
+        return String.join(delimiter, arr);
     }
 }

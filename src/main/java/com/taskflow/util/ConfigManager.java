@@ -29,12 +29,9 @@ public class ConfigManager {
     }
     
     private void loadConfig() {
-        try {
-            // Try to load from classpath
-            InputStream is = getClass().getClassLoader().getResourceAsStream("application.properties");
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream("application.properties")) {
             if (is != null) {
                 config.load(is);
-                // BUG: InputStream never closed
             }
             
             // Override with environment variables
@@ -50,7 +47,6 @@ public class ConfigManager {
             lastLoadTime = System.currentTimeMillis();
             
         } catch (IOException e) {
-            // Silently swallow the exception
             System.err.println("Failed to load config: " + e.getMessage());
         }
     }

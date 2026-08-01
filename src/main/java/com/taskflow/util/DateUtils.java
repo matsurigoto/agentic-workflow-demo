@@ -125,7 +125,7 @@ public class DateUtils {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
         int month = cal.get(Calendar.MONTH); // 0-based
-        return month / 3; // BUG: returns 0-3 instead of 1-4
+        return month / 3 + 1;
     }
     
     /**
@@ -145,7 +145,7 @@ public class DateUtils {
         cal.set(Calendar.HOUR_OF_DAY, 0);
         cal.set(Calendar.MINUTE, 0);
         cal.set(Calendar.SECOND, 0);
-        // BUG: forgot to reset milliseconds
+        cal.set(Calendar.MILLISECOND, 0);
         return cal.getTime();
     }
 }
