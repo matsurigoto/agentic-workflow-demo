@@ -7,25 +7,25 @@
 - **No lint tool configured**
 
 ## Performance Opportunities Backlog
-1. **[DONE - PR created] getTaskStatistics() full-table-scan** - loads all tasks twice (findAll x2), 13 stream passes. Fixed with aggregate JPQL queries.
-2. **getOverdueTasks() full-table-scan** - now partially fixed (pre-filters in DB, still parses dates in Java due to mixed format). Could be fully pushed to DB with date normalization work.
-3. **DatabaseHelper N+1 queries in getProjectStats()** - 5 separate COUNT queries; could be one query with CASE/SUM. Also has SQL injection.
-4. **getAllTasks() no pagination** - returns unbounded list; needs Pageable support.
-5. **autoAssignTask() loads all users + all tasks** - O(users * tasks) inefficiency.
-6. **DatabaseHelper SQL injection + resource leaks** - searchTasks, getTasksByUser, executeQuery all vulnerable and leak ResultSet/Statement.
+1. **[DONE - PR created #50] getTaskStatistics() full-table-scan** - loads all tasks twice (findAll x2), 13 stream passes. Fixed with aggregate JPQL queries.
+2. **[DONE - PR created #aw_stats2_pr] DatabaseHelper N+1 queries in getProjectStats()** - 5 separate COUNT queries → 1 CASE/SUM query. Also fixed SQL injection + resource leak.
+3. **[DONE - PR created #aw_stats2_pr] autoAssignTask() O(users) N+1** - one query per user → 1 LEFT JOIN aggregate native query findLeastBusyActiveUser().
+4. **getAllTasks() no pagination** - returns unbounded list; needs Pageable support. (NEXT TARGET)
+5. **DatabaseHelper resource leaks (getTasksByUser, executeQuery)** - still leak ResultSet/Statement.
+6. **getOverdueTasks() date parsing in Java** - could be pushed to DB with schema normalization.
 
 ## Work In Progress
 None.
 
 ## Completed Work
-- 2026-08-01: PR created - `perf: replace full-table-scan statistics with aggregate queries` on branch `perf-assist/task-statistics-queries`
+- 2026-08-01 run 1: PR created - `perf: replace full-table-scan statistics with aggregate queries` → issue #50, branch `perf-assist/task-statistics-queries-1dc45b6da8d17a7d`
+- 2026-08-01 run 2: PR created - `perf: consolidate project stats query and fix auto-assign N+1` → branch `perf-assist/project-stats-and-auto-assign`
 
 ## Backlog Cursor
-Last examined: TaskService lines 438-486 (getTaskStatistics), 316-343 (getOverdueTasks)
-Next area: DatabaseHelper getProjectStats N+1, getAllTasks pagination
+Next area: getAllTasks() pagination (TaskService line 275, TaskController), DatabaseHelper.getTasksByUser resource leaks
 
 ## Last Run Tasks
-- 2026-08-01: Task 1 (discover commands), Task 2 (identify opportunities), Task 3 (implement), Task 7 (monthly summary)
+- 2026-08-01 run 2: Task 3 (implement - project stats + auto-assign), Task 7 (monthly summary)
 
 ## Previously Checked Off Items (by maintainer)
 None yet.
