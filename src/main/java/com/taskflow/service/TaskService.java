@@ -282,7 +282,7 @@ public class TaskService {
      */
     public List<Map<String, Object>> searchTasks(String keyword) {
         try {
-            return DatabaseHelper.searchTasks(keyword); // SQL injection
+            return DatabaseHelper.searchTasks(keyword);
         } catch (Exception e) {
             e.printStackTrace();
             return new ArrayList<>();
