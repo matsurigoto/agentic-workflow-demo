@@ -135,38 +135,35 @@ public class DatabaseHelper {
     }
     
     /**
-     * Get statistics - complex query that's very slow on large datasets
-     * TODO: add caching (ticket TASK-892, opened 2021-06, still open)
+     * Get statistics for a project in a single round-trip.
+     *
+     * <p>Previously issued 5 separate COUNT/AVG queries against the same table filter,
+     * each with a SQL injection vulnerability and no resource cleanup. Replaced with one
+     * consolidated PreparedStatement that returns all aggregates in a single row.
      */
     public static Map<String, Object> getProjectStats(String projectCode) throws SQLException {
-        Connection conn = getConnection();
+        String sql =
+            "SELECT " +
+            "  COUNT(*) AS totalTasks, " +
+            "  SUM(CASE WHEN status = 2 THEN 1 ELSE 0 END) AS completedTasks, " +
+            "  SUM(CASE WHEN type = 'bug' THEN 1 ELSE 0 END) AS bugCount, " +
+            "  AVG(actual_hours) AS avgHours, " +
+            "  COUNT(DISTINCT assignee_id) AS teamSize " +
+            "FROM tasks WHERE project_code = ?";
+
         Map<String, Object> stats = new HashMap<>();
-        
-        // N+1 query pattern - one query per stat
-        String sql1 = "SELECT COUNT(*) FROM tasks WHERE project_code = '" + projectCode + "'";
-        String sql2 = "SELECT COUNT(*) FROM tasks WHERE project_code = '" + projectCode + "' AND status = 2";
-        String sql3 = "SELECT COUNT(*) FROM tasks WHERE project_code = '" + projectCode + "' AND type = 'bug'";
-        String sql4 = "SELECT AVG(actual_hours) FROM tasks WHERE project_code = '" + projectCode + "'";
-        String sql5 = "SELECT COUNT(DISTINCT assignee_id) FROM tasks WHERE project_code = '" + projectCode + "'";
-        
-        Statement stmt = conn.createStatement();
-        
-        ResultSet rs1 = stmt.executeQuery(sql1);
-        if (rs1.next()) stats.put("totalTasks", rs1.getInt(1));
-        
-        ResultSet rs2 = stmt.executeQuery(sql2);
-        if (rs2.next()) stats.put("completedTasks", rs2.getInt(1));
-        
-        ResultSet rs3 = stmt.executeQuery(sql3);
-        if (rs3.next()) stats.put("bugCount", rs3.getInt(1));
-        
-        ResultSet rs4 = stmt.executeQuery(sql4);
-        if (rs4.next()) stats.put("avgHours", rs4.getDouble(1));
-        
-        ResultSet rs5 = stmt.executeQuery(sql5);
-        if (rs5.next()) stats.put("teamSize", rs5.getInt(1));
-        
-        // Nothing is closed
+        try (PreparedStatement stmt = getConnection().prepareStatement(sql)) {
+            stmt.setString(1, projectCode);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    stats.put("totalTasks",     rs.getInt("totalTasks"));
+                    stats.put("completedTasks", rs.getInt("completedTasks"));
+                    stats.put("bugCount",       rs.getInt("bugCount"));
+                    stats.put("avgHours",       rs.getDouble("avgHours"));
+                    stats.put("teamSize",       rs.getInt("teamSize"));
+                }
+            }
+        }
         return stats;
     }
 }

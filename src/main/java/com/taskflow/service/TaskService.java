@@ -593,27 +593,15 @@ public class TaskService {
     public Task autoAssignTask(Long taskId) {
         Task task = taskRepository.findById(taskId).orElse(null);
         if (task == null) throw new RuntimeException("Task not found");
-        
-        // Find user with least tasks - VERY SLOW, loads all users and all tasks
-        List<User> users = userRepository.findActiveUsers();
-        User leastBusy = null;
-        int minTasks = Integer.MAX_VALUE;
-        
-        for (User user : users) {
-            List<Task> userTasks = taskRepository.findActiveTasksByAssignee(user.getId());
-            if (userTasks.size() < minTasks) {
-                minTasks = userTasks.size();
-                leastBusy = user;
-            }
-        }
-        
-        if (leastBusy != null) {
-            task.assignee_id = leastBusy.getId();
-            task.updatedDate = new Date();
-            return taskRepository.save(task);
-        }
-        
-        throw new RuntimeException("No available users for assignment");
+
+        // Single aggregate query: LEFT JOIN tasks per user and pick the one with fewest
+        // active tasks. Previously issued one query per active user (O(users) round-trips).
+        User leastBusy = userRepository.findLeastBusyActiveUser()
+                .orElseThrow(() -> new RuntimeException("No available users for assignment"));
+
+        task.assignee_id = leastBusy.getId();
+        task.updatedDate = new Date();
+        return taskRepository.save(task);
     }
     
     // ============================================================
