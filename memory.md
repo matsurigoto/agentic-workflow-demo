@@ -27,17 +27,22 @@
 | LOW | Code | `System.out/err.println` used for audit/logging throughout — no-op in prod but wasteful in high-throughput paths | LOW |
 
 ## Backlog Cursor
-- Next scan: check controllers for additional over-fetching and missing pagination
+- Next scan: `UserService.getActiveUsersByRole()` — push filter to DB; `TaskService` pagination
 
 ## Work In Progress
 None
 
 ## Completed Work
-- **2026-08-01**: PR created — "fix: consolidate N+5 project stats queries and batch-deactivate users"
+- **2026-08-01 run 1**: Issue #47 created with patch — "fix: consolidate N+5 project stats queries and batch-deactivate users"
   - `DatabaseHelper.getProjectStats()`: 5 queries → 1 (−80% round-trips)
   - `UserService.deactivateUsers()`: N×2 DB calls → 1 bulk UPDATE
-  - Branch: `efficiency/consolidate-n-plus-one-project-stats`
+  - Branch: `efficiency/consolidate-n-plus-one-project-stats-5ab78aa36f4e236a` (needs manual PR creation due to GHA permissions)
 
 ## Tasks Last Run (for round-robin)
-- 2026-08-01: Task 1 (commands validated), Task 2 (opportunities identified), Task 3 (implemented), Task 7 (monthly summary)
-- Next run should focus: Task 4 (PR maintenance), Task 5 (comment on issues), Task 6 (measurement infra)
+- 2026-08-01 run 1: Task 1, Task 2, Task 3, Task 7
+- 2026-08-01 run 2: Task 4 (no open PRs), Task 5 (commented on #20, #26), Task 7
+- Next run should focus: Task 2 (continue backlog scan), Task 3 (implement UserService.getActiveUsersByRole filter push), Task 6 (measurement infra)
+
+## Issues Commented On (Task 5)
+- #20 (DatabaseHelper → JPA): Efficiency Improver comment added 2026-08-01
+- #26 (thread-unsafe singleton): Efficiency Improver comment added 2026-08-01
