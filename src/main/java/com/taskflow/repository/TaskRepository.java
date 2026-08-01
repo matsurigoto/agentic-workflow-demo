@@ -31,4 +31,24 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     // TODO: add pagination support
     @Query("SELECT t FROM Task t WHERE t.assignee_id = ?1 AND t.status != 2 ORDER BY t.priority DESC")
     List<Task> findActiveTasksByAssignee(Long assigneeId);
+
+    // Aggregate queries for statistics - avoids loading all tasks into memory
+    @Query("SELECT t.status, COUNT(t) FROM Task t GROUP BY t.status")
+    List<Object[]> countByStatus();
+
+    @Query("SELECT t.priority, COUNT(t) FROM Task t GROUP BY t.priority")
+    List<Object[]> countByPriority();
+
+    @Query("SELECT t.type, COUNT(t) FROM Task t GROUP BY t.type")
+    List<Object[]> countByType();
+
+    @Query("SELECT COUNT(t) FROM Task t")
+    long countTotal();
+
+    @Query("SELECT SUM(t.estimated_hours), SUM(t.actual_hours), COUNT(t) FROM Task t WHERE t.status = 2")
+    Object[] sumHoursForCompleted();
+
+    // Overdue tasks query - filters in DB rather than loading all tasks
+    @Query("SELECT t FROM Task t WHERE t.status NOT IN (2, 3) AND t.due_date IS NOT NULL AND t.due_date != '' ORDER BY t.priority DESC")
+    List<Task> findNonCompletedTasksWithDueDate();
 }

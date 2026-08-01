@@ -311,34 +311,21 @@ public class TaskService {
     }
     
     /**
-     * Get overdue tasks - VERY SLOW, loads all tasks then filters in Java
+     * Get overdue tasks - queries only non-completed tasks with a due date,
+     * then filters by date in Java (due_date is stored as a string with mixed formats).
+     * Previously loaded ALL tasks into memory before filtering.
      */
     public List<Task> getOverdueTasks() {
-        List<Task> allTasks = taskRepository.findAll(); // Load ALL tasks
+        List<Task> candidates = taskRepository.findNonCompletedTasksWithDueDate();
         List<Task> overdue = new ArrayList<>();
-        
-        for (Task task : allTasks) {
-            // Only check non-completed, non-cancelled tasks
-            if (task.status != STATUS_DONE && task.status != STATUS_CANCELLED) {
-                if (task.due_date != null && !task.due_date.isEmpty()) {
-                    if (DateUtils.isOverdue(task.due_date)) {
-                        overdue.add(task);
-                    }
-                }
+
+        for (Task task : candidates) {
+            if (DateUtils.isOverdue(task.due_date)) {
+                overdue.add(task);
             }
         }
-        
-        // Sort by priority (highest first) - manual sort instead of using Comparator
-        for (int i = 0; i < overdue.size(); i++) {
-            for (int j = i + 1; j < overdue.size(); j++) {
-                if (overdue.get(i).priority < overdue.get(j).priority) {
-                    Task temp = overdue.get(i);
-                    overdue.set(i, overdue.get(j));
-                    overdue.set(j, temp);
-                }
-            }
-        }
-        
+
+        // Results are already ordered by priority DESC from the query
         return overdue;
     }
     
@@ -432,56 +419,75 @@ public class TaskService {
     }
     
     /**
-     * Get task statistics for dashboard
-     * PERFORMANCE: This is called on every page load and is very slow
+     * Get task statistics for dashboard.
+     * Uses aggregate JPQL queries instead of loading all tasks into memory.
+     * Previously: findAll() (O(n) memory) + 13 stream passes + a second findAll() via getOverdueTasks().
+     * Now: 4 aggregate DB queries + 1 filtered query for overdue candidates.
      */
     public Map<String, Object> getTaskStatistics() {
         Map<String, Object> stats = new HashMap<>();
-        
-        // Load ALL tasks into memory to calculate stats
-        List<Task> allTasks = taskRepository.findAll();
-        
-        stats.put("total", allTasks.size());
-        
-        // Count by status - O(n) for each status
-        stats.put("todo", allTasks.stream().filter(t -> t.status == STATUS_TODO).count());
-        stats.put("inProgress", allTasks.stream().filter(t -> t.status == STATUS_IN_PROGRESS).count());
-        stats.put("done", allTasks.stream().filter(t -> t.status == STATUS_DONE).count());
-        stats.put("cancelled", allTasks.stream().filter(t -> t.status == STATUS_CANCELLED).count());
-        stats.put("blocked", allTasks.stream().filter(t -> t.status == STATUS_BLOCKED).count());
-        stats.put("review", allTasks.stream().filter(t -> t.status == STATUS_REVIEW).count());
-        
-        // Count by priority
-        stats.put("critical", allTasks.stream().filter(t -> t.priority >= PRIORITY_CRITICAL).count());
-        stats.put("high", allTasks.stream().filter(t -> t.priority == PRIORITY_HIGH).count());
-        stats.put("medium", allTasks.stream().filter(t -> t.priority == PRIORITY_MEDIUM).count());
-        stats.put("low", allTasks.stream().filter(t -> t.priority == PRIORITY_LOW).count());
-        
-        // Count by type
-        stats.put("bugs", allTasks.stream().filter(t -> "bug".equals(t.type)).count());
-        stats.put("features", allTasks.stream().filter(t -> "feature".equals(t.type)).count());
-        stats.put("tasks", allTasks.stream().filter(t -> "task".equals(t.type)).count());
-        
-        // Overdue count - calls the slow method again
-        stats.put("overdue", getOverdueTasks().size());
-        
-        // Average time - manual calculation
-        int totalEstimated = 0;
-        int totalActual = 0;
-        int completedCount = 0;
-        for (Task t : allTasks) {
-            if (t.status == STATUS_DONE) {
-                totalEstimated += t.estimated_hours;
-                totalActual += t.actual_hours;
-                completedCount++;
-            }
+
+        stats.put("total", taskRepository.countTotal());
+
+        // Status counts from a single aggregate query
+        Map<Integer, Long> byStatus = new HashMap<>();
+        for (Object[] row : taskRepository.countByStatus()) {
+            byStatus.put((Integer) row[0], (Long) row[1]);
         }
-        
-        // BUG: division by zero when no tasks are completed
-        stats.put("avgEstimated", totalEstimated / completedCount);
-        stats.put("avgActual", totalActual / completedCount);
-        stats.put("estimateAccuracy", (double) totalActual / totalEstimated * 100);
-        
+        stats.put("todo",       byStatus.getOrDefault(STATUS_TODO, 0L));
+        stats.put("inProgress", byStatus.getOrDefault(STATUS_IN_PROGRESS, 0L));
+        stats.put("done",       byStatus.getOrDefault(STATUS_DONE, 0L));
+        stats.put("cancelled",  byStatus.getOrDefault(STATUS_CANCELLED, 0L));
+        stats.put("blocked",    byStatus.getOrDefault(STATUS_BLOCKED, 0L));
+        stats.put("review",     byStatus.getOrDefault(STATUS_REVIEW, 0L));
+
+        // Priority counts from a single aggregate query
+        Map<Integer, Long> byPriority = new HashMap<>();
+        for (Object[] row : taskRepository.countByPriority()) {
+            byPriority.put((Integer) row[0], (Long) row[1]);
+        }
+        // PRIORITY_CRITICAL includes PRIORITY_BLOCKER (>= 4)
+        long critical = byPriority.getOrDefault(PRIORITY_CRITICAL, 0L)
+                      + byPriority.getOrDefault(PRIORITY_BLOCKER, 0L);
+        stats.put("critical", critical);
+        stats.put("high",   byPriority.getOrDefault(PRIORITY_HIGH, 0L));
+        stats.put("medium", byPriority.getOrDefault(PRIORITY_MEDIUM, 0L));
+        stats.put("low",    byPriority.getOrDefault(PRIORITY_LOW, 0L));
+
+        // Type counts from a single aggregate query
+        Map<String, Long> byType = new HashMap<>();
+        for (Object[] row : taskRepository.countByType()) {
+            if (row[0] != null) byType.put((String) row[0], (Long) row[1]);
+        }
+        stats.put("bugs",     byType.getOrDefault("bug", 0L));
+        stats.put("features", byType.getOrDefault("feature", 0L));
+        stats.put("tasks",    byType.getOrDefault("task", 0L));
+
+        // Overdue count - reuses the optimized getOverdueTasks()
+        stats.put("overdue", getOverdueTasks().size());
+
+        // Average hours for completed tasks from a single aggregate query
+        Object[] hoursRow = taskRepository.sumHoursForCompleted();
+        if (hoursRow != null && hoursRow[2] != null) {
+            long completedCount = (Long) hoursRow[2];
+            if (completedCount > 0) {
+                long totalEstimated = hoursRow[0] != null ? ((Number) hoursRow[0]).longValue() : 0L;
+                long totalActual    = hoursRow[1] != null ? ((Number) hoursRow[1]).longValue() : 0L;
+                stats.put("avgEstimated", (double) totalEstimated / completedCount);
+                stats.put("avgActual",    (double) totalActual    / completedCount);
+                stats.put("estimateAccuracy",
+                        totalEstimated > 0 ? (double) totalActual / totalEstimated * 100 : 0.0);
+            } else {
+                stats.put("avgEstimated", 0.0);
+                stats.put("avgActual",    0.0);
+                stats.put("estimateAccuracy", 0.0);
+            }
+        } else {
+            stats.put("avgEstimated", 0.0);
+            stats.put("avgActual",    0.0);
+            stats.put("estimateAccuracy", 0.0);
+        }
+
         return stats;
     }
     
