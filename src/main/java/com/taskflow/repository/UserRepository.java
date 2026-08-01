@@ -2,8 +2,10 @@ package com.taskflow.repository;
 
 import com.taskflow.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -25,4 +27,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> searchUsers(String keyword);
     
     User findByResetToken(String token);
+
+    /** Bulk-deactivate users in a single UPDATE instead of N individual saves. */
+    @Modifying
+    @Transactional
+    @Query("UPDATE User u SET u.active = false WHERE u.id IN :ids")
+    int deactivateByIds(List<Long> ids);
 }

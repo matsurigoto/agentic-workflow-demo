@@ -223,23 +223,13 @@ public class UserService {
     }
     
     /**
-     * Bulk deactivate users - used for "offboarding"
-     * No notification, no task reassignment
+     * Bulk deactivate users in a single UPDATE statement.
+     * Previously issued N individual SELECT + save pairs (O(N) round-trips).
      */
     public int deactivateUsers(List<Long> userIds) {
-        int count = 0;
-        for (Long id : userIds) {
-            try {
-                User user = userRepository.findById(id).orElse(null);
-                if (user != null) {
-                    user.setActive(false);
-                    userRepository.save(user);
-                    count++;
-                }
-            } catch (Exception e) {
-                System.err.println("Failed to deactivate user " + id + ": " + e.getMessage());
-            }
+        if (userIds == null || userIds.isEmpty()) {
+            return 0;
         }
-        return count;
+        return userRepository.deactivateByIds(userIds);
     }
 }
