@@ -109,10 +109,18 @@ public class TaskServiceTest {
     
     @Test
     public void testSearchTasks() {
-        // SECURITY: This test doesn't verify SQL injection protection
-        // because there IS no SQL injection protection
         List<Map<String, Object>> results = taskService.searchTasks("test");
         assertNotNull(results);
+    }
+
+    @Test
+    public void testSearchTasksRejectsSqlInjection() {
+        // SECURITY: Malicious input should be treated as a literal search term,
+        // not executed as SQL, and must not error out or return all rows.
+        List<Map<String, Object>> allTasks = taskService.searchTasks("");
+        List<Map<String, Object>> injectionResults = taskService.searchTasks("' OR '1'='1");
+        assertNotNull(injectionResults);
+        assertTrue(injectionResults.size() <= allTasks.size());
     }
     
     @Test

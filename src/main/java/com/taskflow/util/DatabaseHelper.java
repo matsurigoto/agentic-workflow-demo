@@ -35,25 +35,26 @@ public class DatabaseHelper {
     
     /**
      * Search tasks by keyword
-     * SECURITY: SQL INJECTION VULNERABILITY
      */
     public static List<Map<String, Object>> searchTasks(String keyword) throws SQLException {
         Connection conn = getConnection();
-        // SECURITY: Direct string concatenation = SQL injection
-        String sql = "SELECT * FROM tasks WHERE title LIKE '%" + keyword + "%' OR description LIKE '%" + keyword + "%'";
-        Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery(sql);
-        
+        String sql = "SELECT * FROM tasks WHERE title LIKE ? OR description LIKE ?";
         List<Map<String, Object>> results = new ArrayList<>();
-        ResultSetMetaData meta = rs.getMetaData();
-        while (rs.next()) {
-            Map<String, Object> row = new HashMap<>();
-            for (int i = 1; i <= meta.getColumnCount(); i++) {
-                row.put(meta.getColumnName(i), rs.getObject(i));
+        String likePattern = "%" + keyword + "%";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, likePattern);
+            stmt.setString(2, likePattern);
+            try (ResultSet rs = stmt.executeQuery()) {
+                ResultSetMetaData meta = rs.getMetaData();
+                while (rs.next()) {
+                    Map<String, Object> row = new HashMap<>();
+                    for (int i = 1; i <= meta.getColumnCount(); i++) {
+                        row.put(meta.getColumnName(i), rs.getObject(i));
+                    }
+                    results.add(row);
+                }
             }
-            results.add(row);
         }
-        // BUG: ResultSet and Statement never closed - resource leak
         return results;
     }
     
