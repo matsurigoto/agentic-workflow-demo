@@ -31,6 +31,11 @@ tools:
     toolsets: [default]
   bash: true
 
+engine:
+  id: copilot
+  env:
+    GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 timeout-minutes: 10
 
 source: githubnext/agentics/workflows/cost-tracker.md@42c2ab5b4e4c9273534c39259b2e0df7f20f07e9
