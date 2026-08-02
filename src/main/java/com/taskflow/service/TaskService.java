@@ -11,6 +11,8 @@ import com.taskflow.util.DateUtils;
 import com.taskflow.util.StringUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
@@ -271,9 +273,18 @@ public class TaskService {
     
     /**
      * Get all tasks - NO PAGINATION, loads everything into memory
+     * @deprecated Use {@link #getAllTasks(Pageable)} instead
      */
+    @Deprecated
     public List<Task> getAllTasks() {
         return taskRepository.findAll(); // Could be thousands of tasks
+    }
+
+    /**
+     * Get tasks with pagination to avoid loading unbounded result sets into memory.
+     */
+    public List<Task> getAllTasks(Pageable pageable) {
+        return taskRepository.findAll(pageable).getContent();
     }
     
     /**

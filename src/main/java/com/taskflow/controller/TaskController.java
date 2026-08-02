@@ -4,6 +4,7 @@ import com.taskflow.model.Task;
 import com.taskflow.service.TaskService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,11 +28,18 @@ public class TaskController {
     private TaskService taskService;
     
     /**
-     * Get all tasks - no pagination, returns everything
+     * Get tasks with optional pagination. Defaults to first 50 tasks to avoid
+     * loading unbounded result sets into memory.
+     *
+     * @param page zero-based page number (default 0)
+     * @param size page size, capped at 200 to protect the server (default 50)
      */
     @GetMapping("/tasks")
-    public List<Task> getAllTasks() {
-        return taskService.getAllTasks();
+    public List<Task> getAllTasks(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size) {
+        int cappedSize = Math.min(size, 200);
+        return taskService.getAllTasks(PageRequest.of(page, cappedSize));
     }
     
     /**
@@ -210,10 +218,13 @@ public class TaskController {
     
     // Legacy endpoint - kept for backward compatibility with mobile app v1.x
     @GetMapping("/v1/tasks")
-    public Map<String, Object> getTasksLegacy() {
+    public Map<String, Object> getTasksLegacy(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size) {
+        int cappedSize = Math.min(size, 200);
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
-        response.put("data", taskService.getAllTasks());
+        response.put("data", taskService.getAllTasks(PageRequest.of(page, cappedSize)));
         response.put("timestamp", System.currentTimeMillis());
         return response;
     }
