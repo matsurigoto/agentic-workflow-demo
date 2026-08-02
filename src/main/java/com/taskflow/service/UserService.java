@@ -207,19 +207,11 @@ public class UserService {
     }
     
     /**
-     * Get users by role with active filter
-     * DUPLICATE logic with repository method
+     * Get users by role with active filter.
+     * Filter is pushed to the DB so only matching rows are transferred.
      */
     public List<User> getActiveUsersByRole(String role) {
-        List<User> users = userRepository.findByRole(role);
-        // Manual filtering because the query doesn't filter by active
-        List<User> activeUsers = new ArrayList<>();
-        for (User user : users) {
-            if (user.isActive() && !user.isDeleted()) {
-                activeUsers.add(user);
-            }
-        }
-        return activeUsers;
+        return userRepository.findActiveNonDeletedByRole(role);
     }
     
     /**
