@@ -34,48 +34,54 @@ public class DatabaseHelper {
     }
     
     /**
-     * Search tasks by keyword
-     * SECURITY: SQL INJECTION VULNERABILITY
+     * Search tasks by keyword.
+     * Uses PreparedStatement so the DB can reuse the query execution plan
+     * across repeated calls, saving CPU on the database server.
      */
     public static List<Map<String, Object>> searchTasks(String keyword) throws SQLException {
-        Connection conn = getConnection();
-        // SECURITY: Direct string concatenation = SQL injection
-        String sql = "SELECT * FROM tasks WHERE title LIKE '%" + keyword + "%' OR description LIKE '%" + keyword + "%'";
-        Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery(sql);
-        
+        String sql = "SELECT id, title, description, status, priority, assignee_id, project_code"
+                + " FROM tasks WHERE title LIKE ? OR description LIKE ?";
+        String pattern = "%" + keyword + "%";
         List<Map<String, Object>> results = new ArrayList<>();
-        ResultSetMetaData meta = rs.getMetaData();
-        while (rs.next()) {
-            Map<String, Object> row = new HashMap<>();
-            for (int i = 1; i <= meta.getColumnCount(); i++) {
-                row.put(meta.getColumnName(i), rs.getObject(i));
+        try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
+            ps.setString(1, pattern);
+            ps.setString(2, pattern);
+            try (ResultSet rs = ps.executeQuery()) {
+                ResultSetMetaData meta = rs.getMetaData();
+                while (rs.next()) {
+                    Map<String, Object> row = new HashMap<>();
+                    for (int i = 1; i <= meta.getColumnCount(); i++) {
+                        row.put(meta.getColumnName(i), rs.getObject(i));
+                    }
+                    results.add(row);
+                }
             }
-            results.add(row);
         }
-        // BUG: ResultSet and Statement never closed - resource leak
         return results;
     }
     
     /**
-     * Get tasks by user - ALSO has SQL injection
+     * Get tasks by user.
+     * Selects only the 4 columns consumed by callers (id, title, status, priority)
+     * instead of SELECT * — reduces network transfer and heap allocation.
+     * Uses PreparedStatement for query-plan reuse.
      */
     public static List<Map<String, Object>> getTasksByUser(String userId) throws SQLException {
-        Connection conn = getConnection();
-        String sql = "SELECT * FROM tasks WHERE assignee_id = " + userId;
-        Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery(sql);
-        
+        String sql = "SELECT id, title, status, priority FROM tasks WHERE assignee_id = ?";
         List<Map<String, Object>> results = new ArrayList<>();
-        while (rs.next()) {
-            Map<String, Object> row = new HashMap<>();
-            row.put("id", rs.getLong("id"));
-            row.put("title", rs.getString("title"));
-            row.put("status", rs.getInt("status"));
-            row.put("priority", rs.getInt("priority"));
-            results.add(row);
+        try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
+            ps.setString(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> row = new HashMap<>();
+                    row.put("id", rs.getLong("id"));
+                    row.put("title", rs.getString("title"));
+                    row.put("status", rs.getInt("status"));
+                    row.put("priority", rs.getInt("priority"));
+                    results.add(row);
+                }
+            }
         }
-        // resource leak again
         return results;
     }
     
