@@ -41,19 +41,18 @@ public class DatabaseHelper {
         Connection conn = getConnection();
         // SECURITY: Direct string concatenation = SQL injection
         String sql = "SELECT * FROM tasks WHERE title LIKE '%" + keyword + "%' OR description LIKE '%" + keyword + "%'";
-        Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery(sql);
-        
         List<Map<String, Object>> results = new ArrayList<>();
-        ResultSetMetaData meta = rs.getMetaData();
-        while (rs.next()) {
-            Map<String, Object> row = new HashMap<>();
-            for (int i = 1; i <= meta.getColumnCount(); i++) {
-                row.put(meta.getColumnName(i), rs.getObject(i));
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            ResultSetMetaData meta = rs.getMetaData();
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                for (int i = 1; i <= meta.getColumnCount(); i++) {
+                    row.put(meta.getColumnName(i), rs.getObject(i));
+                }
+                results.add(row);
             }
-            results.add(row);
         }
-        // BUG: ResultSet and Statement never closed - resource leak
         return results;
     }
     
@@ -63,19 +62,18 @@ public class DatabaseHelper {
     public static List<Map<String, Object>> getTasksByUser(String userId) throws SQLException {
         Connection conn = getConnection();
         String sql = "SELECT * FROM tasks WHERE assignee_id = " + userId;
-        Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery(sql);
-        
         List<Map<String, Object>> results = new ArrayList<>();
-        while (rs.next()) {
-            Map<String, Object> row = new HashMap<>();
-            row.put("id", rs.getLong("id"));
-            row.put("title", rs.getString("title"));
-            row.put("status", rs.getInt("status"));
-            row.put("priority", rs.getInt("priority"));
-            results.add(row);
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("id", rs.getLong("id"));
+                row.put("title", rs.getString("title"));
+                row.put("status", rs.getInt("status"));
+                row.put("priority", rs.getInt("priority"));
+                results.add(row);
+            }
         }
-        // resource leak again
         return results;
     }
     
@@ -85,17 +83,17 @@ public class DatabaseHelper {
      */
     public static List<Map<String, Object>> executeQuery(String sql) throws SQLException {
         Connection conn = getConnection();
-        Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery(sql);
-        
         List<Map<String, Object>> results = new ArrayList<>();
-        ResultSetMetaData meta = rs.getMetaData();
-        while (rs.next()) {
-            Map<String, Object> row = new HashMap<>();
-            for (int i = 1; i <= meta.getColumnCount(); i++) {
-                row.put(meta.getColumnName(i), rs.getObject(i));
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            ResultSetMetaData meta = rs.getMetaData();
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                for (int i = 1; i <= meta.getColumnCount(); i++) {
+                    row.put(meta.getColumnName(i), rs.getObject(i));
+                }
+                results.add(row);
             }
-            results.add(row);
         }
         return results;
     }
@@ -106,11 +104,11 @@ public class DatabaseHelper {
     public static boolean updateTaskStatus(long taskId, int status) {
         try {
             Connection conn = getConnection();
-            // SQL injection via taskId is less obvious but still possible with string concat
             String sql = "UPDATE tasks SET status = " + status + ", updated_at = NOW() WHERE id = " + taskId;
-            Statement stmt = conn.createStatement();
-            int rows = stmt.executeUpdate(sql);
-            return rows > 0;
+            try (Statement stmt = conn.createStatement()) {
+                int rows = stmt.executeUpdate(sql);
+                return rows > 0;
+            }
         } catch (SQLException e) {
             // FIXME: swallowing exception, just printing stack trace
             e.printStackTrace();
@@ -129,9 +127,10 @@ public class DatabaseHelper {
             if (i < taskIds.size() - 1) sql.append(",");
         }
         sql.append(")");
-        
-        Statement stmt = conn.createStatement();
-        return stmt.executeUpdate(sql.toString());
+
+        try (Statement stmt = conn.createStatement()) {
+            return stmt.executeUpdate(sql.toString());
+        }
     }
     
     /**
