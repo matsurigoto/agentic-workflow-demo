@@ -19,7 +19,7 @@
 
 - `DataInitializer` runs during tests, polluting test state - fixed by @BeforeEach taskRepository.deleteAll()
 - `DateUtils.getQuarter()` has a documented off-by-one bug (issue #7) - returns 0-3, should return 1-4
-- `addBusinessDays()` has a bug: checks `DAY_OF_WEEK != 6 && != 7` but in Java Calendar, Friday=6 and Saturday=7
+- `addBusinessDays()` has a bug: checks `DAY_OF_WEEK != 6 && != 7` but 6=FRIDAY, 7=SATURDAY - so it skips Friday and Saturday but counts Sunday
 - `StringUtils.padRight()` has a known StringIndexOutOfBoundsException bug (issue #8)
 - Thread-safety bug in `DateUtils` using static `SimpleDateFormat` fields (issue #5)
 - `startOfDay()` doesn't reset milliseconds (minor bug)
@@ -32,9 +32,10 @@
 ## Testing Backlog (prioritized)
 
 1. **DONE**: Fix `TaskServiceTest` - add @BeforeEach cleanup, proper assertions - PR created 2026-08-02
-2. **MEDIUM**: Add regression tests for DateUtils bugs (getQuarter off-by-one, addBusinessDays wrong day constants)
-3. **MEDIUM**: Add regression tests for StringUtils.padRight StringIndexOutOfBoundsException
+2. **DONE**: Regression tests for DateUtils (isWithinRange, addBusinessDays, isOverdue) - PR created 2026-08-03
+3. **DONE**: Regression tests for StringUtils.padRight StringIndexOutOfBoundsException - PR created 2026-08-03
 4. **LOW**: Thread-safety tests for DateUtils (demonstrates issue #5)
+5. **LOW**: Integration tests for TaskService
 
 ## Work In Progress
 
@@ -42,16 +43,17 @@ None.
 
 ## Completed Work
 
-- 2026-08-02: PR created fixing TaskServiceTest (@BeforeEach cleanup, proper assertions for 6 no-assertion tests, 2 new tests)
+- 2026-08-02: PR created fixing TaskServiceTest (@BeforeEach cleanup, proper assertions)
+- 2026-08-03: PR created adding regression tests for DateUtils (isWithinRange, addBusinessDays, isOverdue) and StringUtils (padRight exception)
 
 ## Task Round-Robin History
 
 - 2026-08-01 Run 1: Task 1 (Commands), Task 2 (Opportunities), Task 7 (Monthly Summary)
 - 2026-08-01 Run 2: Task 3 (Implement Tests - regression tests PR), Task 7 (Monthly Summary)
 - 2026-08-02 Run 3: Task 4 (PR check - none open), Task 3 (Fix TaskServiceTest), Task 7 (Monthly Summary)
+- 2026-08-03 Run 4: Task 3 (Regression tests DateUtils+StringUtils), Task 7 (Monthly Summary)
 
 ## Backlog Cursor
 
 - Issues reviewed: all open issues scanned
-- Previous regression tests PR: not found in open PRs (may not have been created or was closed)
-- Next testing opportunity: Regression tests for DateUtils/StringUtils bugs (item 2 in backlog)
+- Next run should focus on: Task 4 (check open PRs), Task 5 (comment on testing issues), Task 6 (test infrastructure)
