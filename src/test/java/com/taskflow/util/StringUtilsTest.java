@@ -90,5 +90,37 @@ public class StringUtilsTest {
         assertEquals("", StringUtils.join(new String[]{}, ","));
     }
     
-    // No test for padRight - it has a known StringIndexOutOfBoundsException bug
+    @Test
+    public void testJoin() {
+        assertEquals("a,b,c", StringUtils.join(new String[]{"a", "b", "c"}, ","));
+        assertEquals("", StringUtils.join(null, ","));
+        assertEquals("", StringUtils.join(new String[]{}, ","));
+    }
+
+    /**
+     * Regression: padRight throws StringIndexOutOfBoundsException when str.length() > width.
+     * new String(new char[width - str.length()]) throws when (width - str.length()) is negative.
+     * Issue #8.
+     */
+    @Test
+    public void testPadRight_strShorterThanWidth_paddedWithSpaces() {
+        assertEquals("hi   ", StringUtils.padRight("hi", 5));
+    }
+
+    @Test
+    public void testPadRight_strEqualsWidth_noChange() {
+        assertEquals("hello", StringUtils.padRight("hello", 5));
+    }
+
+    @Test
+    public void testPadRight_strLongerThanWidth_shouldNotThrow() {
+        // BUG: throws StringIndexOutOfBoundsException because (width - str.length()) < 0
+        assertDoesNotThrow(() -> StringUtils.padRight("toolongstring", 5),
+                "padRight should not throw when string is longer than width");
+    }
+
+    @Test
+    public void testPadRight_nullInput_treatedAsEmpty() {
+        assertEquals("     ", StringUtils.padRight(null, 5));
+    }
 }
