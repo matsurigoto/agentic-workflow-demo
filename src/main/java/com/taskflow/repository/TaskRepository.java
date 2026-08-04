@@ -31,4 +31,17 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     // TODO: add pagination support
     @Query("SELECT t FROM Task t WHERE t.assignee_id = ?1 AND t.status != 2 ORDER BY t.priority DESC")
     List<Task> findActiveTasksByAssignee(Long assigneeId);
+
+    // COUNT queries — push aggregation to DB instead of loading all rows into JVM
+    long countByStatus(int status);
+
+    long countByPriority(int priority);
+
+    long countByType(String type);
+
+    @Query("SELECT COUNT(t) FROM Task t WHERE t.priority >= 3")
+    long countCriticalAndAbove();
+
+    @Query("SELECT SUM(t.estimated_hours), SUM(t.actual_hours), COUNT(t) FROM Task t WHERE t.status = ?1")
+    List<Object[]> sumHoursByStatus(int status);
 }

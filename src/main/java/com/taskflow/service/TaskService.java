@@ -328,16 +328,8 @@ public class TaskService {
             }
         }
         
-        // Sort by priority (highest first) - manual sort instead of using Comparator
-        for (int i = 0; i < overdue.size(); i++) {
-            for (int j = i + 1; j < overdue.size(); j++) {
-                if (overdue.get(i).priority < overdue.get(j).priority) {
-                    Task temp = overdue.get(i);
-                    overdue.set(i, overdue.get(j));
-                    overdue.set(j, temp);
-                }
-            }
-        }
+        // Sort by priority (highest first)
+        overdue.sort(Comparator.comparingInt((Task t) -> t.priority).reversed());
         
         return overdue;
     }
@@ -432,56 +424,52 @@ public class TaskService {
     }
     
     /**
-     * Get task statistics for dashboard
-     * PERFORMANCE: This is called on every page load and is very slow
+     * Get task statistics for dashboard.
+     * Uses DB COUNT queries instead of loading all rows into JVM memory.
      */
     public Map<String, Object> getTaskStatistics() {
         Map<String, Object> stats = new HashMap<>();
-        
-        // Load ALL tasks into memory to calculate stats
-        List<Task> allTasks = taskRepository.findAll();
-        
-        stats.put("total", allTasks.size());
-        
-        // Count by status - O(n) for each status
-        stats.put("todo", allTasks.stream().filter(t -> t.status == STATUS_TODO).count());
-        stats.put("inProgress", allTasks.stream().filter(t -> t.status == STATUS_IN_PROGRESS).count());
-        stats.put("done", allTasks.stream().filter(t -> t.status == STATUS_DONE).count());
-        stats.put("cancelled", allTasks.stream().filter(t -> t.status == STATUS_CANCELLED).count());
-        stats.put("blocked", allTasks.stream().filter(t -> t.status == STATUS_BLOCKED).count());
-        stats.put("review", allTasks.stream().filter(t -> t.status == STATUS_REVIEW).count());
-        
-        // Count by priority
-        stats.put("critical", allTasks.stream().filter(t -> t.priority >= PRIORITY_CRITICAL).count());
-        stats.put("high", allTasks.stream().filter(t -> t.priority == PRIORITY_HIGH).count());
-        stats.put("medium", allTasks.stream().filter(t -> t.priority == PRIORITY_MEDIUM).count());
-        stats.put("low", allTasks.stream().filter(t -> t.priority == PRIORITY_LOW).count());
-        
-        // Count by type
-        stats.put("bugs", allTasks.stream().filter(t -> "bug".equals(t.type)).count());
-        stats.put("features", allTasks.stream().filter(t -> "feature".equals(t.type)).count());
-        stats.put("tasks", allTasks.stream().filter(t -> "task".equals(t.type)).count());
-        
-        // Overdue count - calls the slow method again
+
+        // Counts are pushed to the DB — no full-table load required
+        long todo       = taskRepository.countByStatus(STATUS_TODO);
+        long inProgress = taskRepository.countByStatus(STATUS_IN_PROGRESS);
+        long done       = taskRepository.countByStatus(STATUS_DONE);
+        long cancelled  = taskRepository.countByStatus(STATUS_CANCELLED);
+        long blocked    = taskRepository.countByStatus(STATUS_BLOCKED);
+        long review     = taskRepository.countByStatus(STATUS_REVIEW);
+
+        stats.put("total",      todo + inProgress + done + cancelled + blocked + review);
+        stats.put("todo",       todo);
+        stats.put("inProgress", inProgress);
+        stats.put("done",       done);
+        stats.put("cancelled",  cancelled);
+        stats.put("blocked",    blocked);
+        stats.put("review",     review);
+
+        stats.put("critical", taskRepository.countCriticalAndAbove());
+        stats.put("high",     taskRepository.countByPriority(PRIORITY_HIGH));
+        stats.put("medium",   taskRepository.countByPriority(PRIORITY_MEDIUM));
+        stats.put("low",      taskRepository.countByPriority(PRIORITY_LOW));
+
+        stats.put("bugs",     taskRepository.countByType("bug"));
+        stats.put("features", taskRepository.countByType("feature"));
+        stats.put("tasks",    taskRepository.countByType("task"));
+
+        // Overdue detection still requires date parsing in Java (multi-format string dates)
         stats.put("overdue", getOverdueTasks().size());
-        
-        // Average time - manual calculation
-        int totalEstimated = 0;
-        int totalActual = 0;
-        int completedCount = 0;
-        for (Task t : allTasks) {
-            if (t.status == STATUS_DONE) {
-                totalEstimated += t.estimated_hours;
-                totalActual += t.actual_hours;
-                completedCount++;
-            }
-        }
-        
-        // BUG: division by zero when no tasks are completed
-        stats.put("avgEstimated", totalEstimated / completedCount);
-        stats.put("avgActual", totalActual / completedCount);
+
+        // Average hours for completed tasks
+        List<Object[]> hourRows = taskRepository.sumHoursByStatus(STATUS_DONE);
+        Object[] hourSums = (hourRows != null && !hourRows.isEmpty()) ? hourRows.get(0) : new Object[]{null, null, null};
+        int totalEstimated = hourSums[0] != null ? ((Number) hourSums[0]).intValue() : 0;
+        int totalActual    = hourSums[1] != null ? ((Number) hourSums[1]).intValue() : 0;
+        int completedCount = hourSums[2] != null ? ((Number) hourSums[2]).intValue() : 0;
+
+        // BUG: division by zero when no tasks are completed (pre-existing)
+        stats.put("avgEstimated",     totalEstimated / completedCount);
+        stats.put("avgActual",        totalActual / completedCount);
         stats.put("estimateAccuracy", (double) totalActual / totalEstimated * 100);
-        
+
         return stats;
     }
     
