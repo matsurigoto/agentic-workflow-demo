@@ -24,6 +24,7 @@
 - Thread-safety bug in `DateUtils` using static `SimpleDateFormat` fields (issue #5)
 - `startOfDay()` doesn't reset milliseconds (minor bug)
 - `isWithinRange()` uses exclusive bounds but should be inclusive
+- GitHub Actions cannot create PRs in this repo; branches are pushed and issues created with PR links
 
 ## Maintainer Priorities
 
@@ -31,11 +32,12 @@
 
 ## Testing Backlog (prioritized)
 
-1. **DONE**: Fix `TaskServiceTest` - add @BeforeEach cleanup, proper assertions - PR created 2026-08-02
-2. **DONE**: Regression tests for DateUtils (isWithinRange, addBusinessDays, isOverdue) - PR created 2026-08-03
-3. **DONE**: Regression tests for StringUtils.padRight StringIndexOutOfBoundsException - PR created 2026-08-03
-4. **LOW**: Thread-safety tests for DateUtils (demonstrates issue #5)
-5. **LOW**: Integration tests for TaskService
+1. **DONE**: Fix `TaskServiceTest` - add @BeforeEach cleanup, proper assertions - branch pushed 2026-08-02
+2. **DONE**: Regression tests for DateUtils (isWithinRange, addBusinessDays, isOverdue) - branch pushed 2026-08-03
+3. **DONE**: Regression tests for StringUtils.padRight StringIndexOutOfBoundsException - branch pushed 2026-08-03
+4. **NEXT**: Controller integration tests - `@WebMvcTest` for TaskController (0% coverage)
+5. **LOW**: Thread-safety tests for DateUtils (demonstrates issue #5)
+6. **LOW**: Integration tests for TaskService
 
 ## Work In Progress
 
@@ -43,17 +45,23 @@ None.
 
 ## Completed Work
 
-- 2026-08-02: PR created fixing TaskServiceTest (@BeforeEach cleanup, proper assertions)
-- 2026-08-03: PR created adding regression tests for DateUtils (isWithinRange, addBusinessDays, isOverdue) and StringUtils (padRight exception)
+- 2026-08-02: Pushed branch fixing TaskServiceTest (@BeforeEach cleanup, proper assertions) - issue #66
+- 2026-08-03: Pushed branch adding regression tests for DateUtils+StringUtils - issue #71
+- 2026-08-04: Commented on #21 (progress update) and #27 (JaCoCo guidance)
 
 ## Task Round-Robin History
 
 - 2026-08-01 Run 1: Task 1 (Commands), Task 2 (Opportunities), Task 7 (Monthly Summary)
-- 2026-08-01 Run 2: Task 3 (Implement Tests - regression tests PR), Task 7 (Monthly Summary)
+- 2026-08-01 Run 2: Task 3 (Implement Tests - regression tests branch), Task 7 (Monthly Summary)
 - 2026-08-02 Run 3: Task 4 (PR check - none open), Task 3 (Fix TaskServiceTest), Task 7 (Monthly Summary)
 - 2026-08-03 Run 4: Task 3 (Regression tests DateUtils+StringUtils), Task 7 (Monthly Summary)
+- 2026-08-04 Run 5: Task 4 (PR check - no open test-improver PRs), Task 5 (Commented on #21, #27), Task 7 (Monthly Summary)
 
 ## Backlog Cursor
 
-- Issues reviewed: all open issues scanned
-- Next run should focus on: Task 4 (check open PRs), Task 5 (comment on testing issues), Task 6 (test infrastructure)
+- Issues reviewed: #21, #27 (commented 2026-08-04)
+- Next run should focus on: Task 3 (controller integration tests), Task 6 (test infrastructure - JaCoCo)
+
+## Previously Checked Off Items
+
+None yet.
