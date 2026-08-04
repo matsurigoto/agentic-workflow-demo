@@ -1,7 +1,7 @@
 # Efficiency Improver Memory — matsurigoto/agentic-workflow-demo
 
 ## Last Updated
-2026-08-03
+2026-08-04
 
 ## Discovered Commands
 - **Build**: `mvn -Dmaven.repo.local=/tmp/gh-aw/agent/m2 package -DskipTests`
@@ -13,17 +13,18 @@
 - DatabaseHelper uses raw JDBC with shared static Connection (not thread-safe)
 - Spring JPA repositories also exist; prefer them over DatabaseHelper for new code
 - TaskService is a 700+ line god class
+- `due_date` stored as free-form multi-format string — hard to push date comparisons to DB
 
 ## Optimisation Backlog
 
 | Priority | Focus Area | Opportunity | Estimated Impact |
 |---|---|---|---|
-| HIGH | Data | `TaskService.getAllTasks()` / `findAll()` called without pagination in multiple places (lines 276, 317, 442, 543, 641, 655) | HIGH — unbounded full-table loads |
-| MEDIUM | Code | `StringUtils` duplicates Apache Commons StringUtils already on classpath | MEDIUM — dead code / class loading |
+| HIGH | Data | `StringUtils` duplicates Apache Commons StringUtils already on classpath | MEDIUM — dead code / class loading |
+| MEDIUM | Data | `getOverdueTasks()` still does `findAll()` — hard to push to DB without schema change | MEDIUM if table grows |
 | LOW | Code | `System.out/err.println` used for audit/logging throughout | LOW |
 
 ## Backlog Cursor
-- Next scan: TaskService pagination (HIGH priority)
+- Next scan: StringUtils deduplication, then Task 5 (efficiency issues), Task 6 (measurement infra)
 
 ## Work In Progress
 None
@@ -41,13 +42,19 @@ None
   - `getTasksByUser()`: Statement+SELECT* → PreparedStatement+4-column projection + try-with-resources
   - Branch: `efficiency/fix-databasehelper-prepared-statements`
   - Measured: getTasksByUser() bytes/row ≈ −73%; DB query-plan reuse eliminates per-call parse cost
+- **2026-08-04 run 1**: PR created — "perf: push task statistics counts to DB, fix O(n²) overdue sort"
+  - `getTaskStatistics()`: findAll() + 13 stream passes → 12 DB COUNT queries (zero row transfer)
+  - `getOverdueTasks()`: O(n²) bubble sort → O(n log n) Comparator sort
+  - Branch: `efficiency/push-stats-counts-to-db-query`
+  - Measured: row bytes transferred per call −100% for counts; heap allocation −100% for Task objects
 
 ## Tasks Last Run (for round-robin)
 - 2026-08-01 run 1: Task 1, Task 2, Task 3, Task 7
 - 2026-08-01 run 2: Task 4 (no open PRs), Task 5 (commented on #20, #26), Task 7
 - 2026-08-02 run 1: Task 3 (push active+role filter to DB), Task 7
 - 2026-08-03 run 1: Task 3 (DatabaseHelper PreparedStatement), Task 7
-- Next run should focus: Task 2 (TaskService pagination scan), Task 4 (check PR CI), Task 5 (efficiency issues), Task 6 (measurement infra)
+- 2026-08-04 run 1: Task 3 (push stats counts to DB + O(n²) sort fix), Task 7
+- Next run should focus: Task 2 (StringUtils deduplication scan), Task 5 (efficiency issues), Task 6 (measurement infra)
 
 ## Issues Commented On (Task 5)
 - #20 (DatabaseHelper → JPA): Efficiency Improver comment added 2026-08-01
