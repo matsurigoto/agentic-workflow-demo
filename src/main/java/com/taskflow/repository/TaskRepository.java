@@ -31,4 +31,9 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     // TODO: add pagination support
     @Query("SELECT t FROM Task t WHERE t.assignee_id = ?1 AND t.status != 2 ORDER BY t.priority DESC")
     List<Task> findActiveTasksByAssignee(Long assigneeId);
+
+    // Fetch only active tasks that have a due_date set — used by getOverdueTasks() to avoid
+    // loading completed/cancelled tasks and tasks with no deadline.
+    @Query("SELECT t FROM Task t WHERE t.status != 2 AND t.status != 3 AND t.due_date IS NOT NULL AND t.due_date != '' ORDER BY t.priority DESC")
+    List<Task> findActiveTasksWithDueDate();
 }

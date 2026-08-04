@@ -311,35 +311,18 @@ public class TaskService {
     }
     
     /**
-     * Get overdue tasks - VERY SLOW, loads all tasks then filters in Java
+     * Get overdue tasks.
+     *
+     * <p>Optimized: the repository query pre-filters to active tasks that have a due_date,
+     * and returns them already ordered by priority DESC. Only the date-string comparison
+     * (which requires format-aware parsing) is kept in Java.</p>
      */
     public List<Task> getOverdueTasks() {
-        List<Task> allTasks = taskRepository.findAll(); // Load ALL tasks
-        List<Task> overdue = new ArrayList<>();
-        
-        for (Task task : allTasks) {
-            // Only check non-completed, non-cancelled tasks
-            if (task.status != STATUS_DONE && task.status != STATUS_CANCELLED) {
-                if (task.due_date != null && !task.due_date.isEmpty()) {
-                    if (DateUtils.isOverdue(task.due_date)) {
-                        overdue.add(task);
-                    }
-                }
-            }
-        }
-        
-        // Sort by priority (highest first) - manual sort instead of using Comparator
-        for (int i = 0; i < overdue.size(); i++) {
-            for (int j = i + 1; j < overdue.size(); j++) {
-                if (overdue.get(i).priority < overdue.get(j).priority) {
-                    Task temp = overdue.get(i);
-                    overdue.set(i, overdue.get(j));
-                    overdue.set(j, temp);
-                }
-            }
-        }
-        
-        return overdue;
+        // DB-side: exclude done/cancelled rows and rows with no due_date; sort by priority.
+        List<Task> candidates = taskRepository.findActiveTasksWithDueDate();
+        return candidates.stream()
+                .filter(t -> DateUtils.isOverdue(t.due_date))
+                .collect(Collectors.toList());
     }
     
     /**
