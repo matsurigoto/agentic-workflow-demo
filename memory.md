@@ -12,7 +12,8 @@
 ## Testing Framework
 
 - JUnit 5 (JUnit Jupiter)
-- Spring Boot Test (`@SpringBootTest`)
+- Spring Boot Test (`@SpringBootTest`, `@WebMvcTest`)
+- MockMvc + Mockito for controller tests
 - Java 11, Spring Boot 2.7.18
 
 ## Testing Notes
@@ -24,19 +25,21 @@
 - Thread-safety bug in `DateUtils` using static `SimpleDateFormat` fields (issue #5)
 - `startOfDay()` doesn't reset milliseconds (minor bug)
 - `isWithinRange()` uses exclusive bounds but should be inclusive
+- `TaskController.getTask()` returns 200 with null body when not found (should be 404)
+- `TaskController.deleteTask()` returns 400 for "not found" errors (should be 404)
 - GitHub Actions cannot create PRs in this repo; branches are pushed and issues created with PR links
 
 ## Maintainer Priorities
 
-- No specific priorities communicated yet. Several open issues indicate the codebase has known bugs.
+- No specific priorities communicated yet. Several open issues indicate known bugs.
 
 ## Testing Backlog (prioritized)
 
 1. **DONE**: Fix `TaskServiceTest` - add @BeforeEach cleanup, proper assertions - branch pushed 2026-08-02
 2. **DONE**: Regression tests for DateUtils (isWithinRange, addBusinessDays, isOverdue) - branch pushed 2026-08-03
 3. **DONE**: Regression tests for StringUtils.padRight StringIndexOutOfBoundsException - branch pushed 2026-08-03
-4. **NEXT**: Controller integration tests - `@WebMvcTest` for TaskController (0% coverage)
-5. **LOW**: Thread-safety tests for DateUtils (demonstrates issue #5)
+4. **DONE**: Controller integration tests - `@WebMvcTest` for TaskController - branch pushed 2026-08-05
+5. **NEXT**: Thread-safety tests for DateUtils (demonstrates issue #5)
 6. **LOW**: Integration tests for TaskService
 
 ## Work In Progress
@@ -48,6 +51,7 @@ None.
 - 2026-08-02: Pushed branch fixing TaskServiceTest (@BeforeEach cleanup, proper assertions) - issue #66
 - 2026-08-03: Pushed branch adding regression tests for DateUtils+StringUtils - issue #71
 - 2026-08-04: Commented on #21 (progress update) and #27 (JaCoCo guidance)
+- 2026-08-05: Pushed branch `test-assist/task-controller-integration-tests` - 13 @WebMvcTest tests for TaskController
 
 ## Task Round-Robin History
 
@@ -56,11 +60,12 @@ None.
 - 2026-08-02 Run 3: Task 4 (PR check - none open), Task 3 (Fix TaskServiceTest), Task 7 (Monthly Summary)
 - 2026-08-03 Run 4: Task 3 (Regression tests DateUtils+StringUtils), Task 7 (Monthly Summary)
 - 2026-08-04 Run 5: Task 4 (PR check - no open test-improver PRs), Task 5 (Commented on #21, #27), Task 7 (Monthly Summary)
+- 2026-08-05 Run 6: Task 3 (TaskController integration tests), Task 7 (Monthly Summary)
 
 ## Backlog Cursor
 
 - Issues reviewed: #21, #27 (commented 2026-08-04)
-- Next run should focus on: Task 3 (controller integration tests), Task 6 (test infrastructure - JaCoCo)
+- Next run should focus on: Task 4 (check PR statuses), Task 5 (comment on testing issues), or Task 3 (thread-safety tests)
 
 ## Previously Checked Off Items
 
