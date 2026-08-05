@@ -1,60 +1,60 @@
 package com.taskflow.util;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Date utility class
- * 
- * WARNING: SimpleDateFormat is NOT thread-safe but used as static field
- * This causes intermittent parsing errors in production under load
- * Reported in TASK-1203, marked as "won't fix" by previous tech lead
  */
 public class DateUtils {
-    
-    // THREAD-SAFETY BUG: SimpleDateFormat is not thread-safe
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
-    private static final SimpleDateFormat DATETIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    private static final SimpleDateFormat US_FORMAT = new SimpleDateFormat("MM/dd/yyyy");
-    private static final SimpleDateFormat EU_FORMAT = new SimpleDateFormat("dd-MM-yyyy");
-    
+
+    // DateTimeFormatter is immutable and thread-safe
+    private static final DateTimeFormatter DATE_FORMAT     = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final DateTimeFormatter DATETIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter US_FORMAT       = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+    private static final DateTimeFormatter EU_FORMAT       = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
     /**
-     * Parse date string - tries multiple formats
-     * FIXME: Silent failure, returns null on error
+     * Parse date string - tries multiple formats. Returns null if unparseable.
      */
     public static Date parseDate(String dateStr) {
         if (dateStr == null || dateStr.trim().isEmpty()) return null;
-        
-        // Try different formats - order matters but is arbitrary here
+
         try {
-            return DATE_FORMAT.parse(dateStr);
-        } catch (ParseException e) {}
-        
+            return localDateToDate(LocalDate.parse(dateStr, DATE_FORMAT));
+        } catch (DateTimeParseException e) { /* try next */ }
+
         try {
-            return US_FORMAT.parse(dateStr);
-        } catch (ParseException e) {}
-        
+            return localDateToDate(LocalDate.parse(dateStr, US_FORMAT));
+        } catch (DateTimeParseException e) { /* try next */ }
+
         try {
-            return EU_FORMAT.parse(dateStr);
-        } catch (ParseException e) {}
-        
+            return localDateToDate(LocalDate.parse(dateStr, EU_FORMAT));
+        } catch (DateTimeParseException e) { /* try next */ }
+
         try {
-            return DATETIME_FORMAT.parse(dateStr);
-        } catch (ParseException e) {}
-        
-        // Just return null, no logging, no error
+            LocalDateTime ldt = LocalDateTime.parse(dateStr, DATETIME_FORMAT);
+            return Date.from(ldt.atZone(ZoneId.systemDefault()).toInstant());
+        } catch (DateTimeParseException e) { /* give up */ }
+
         return null;
     }
-    
+
     /**
      * Format date to string
      */
     public static String formatDate(Date date) {
         if (date == null) return "";
-        return DATE_FORMAT.format(date); // thread-safety issue
+        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(DATE_FORMAT);
+    }
+
+    private static Date localDateToDate(LocalDate ld) {
+        return Date.from(ld.atStartOfDay(ZoneId.systemDefault()).toInstant());
     }
     
     /**
@@ -118,14 +118,13 @@ public class DateUtils {
     }
     
     /**
-     * Get quarter from date
-     * BUG: off by one - January should be Q1 but returns Q0
+     * Get quarter from date (1-4)
      */
     public static int getQuarter(Date date) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
         int month = cal.get(Calendar.MONTH); // 0-based
-        return month / 3; // BUG: returns 0-3 instead of 1-4
+        return (month / 3) + 1; // returns 1-4
     }
     
     /**
@@ -145,7 +144,7 @@ public class DateUtils {
         cal.set(Calendar.HOUR_OF_DAY, 0);
         cal.set(Calendar.MINUTE, 0);
         cal.set(Calendar.SECOND, 0);
-        // BUG: forgot to reset milliseconds
+        cal.set(Calendar.MILLISECOND, 0);
         return cal.getTime();
     }
 }
