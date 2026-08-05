@@ -31,10 +31,10 @@ public class ConfigManager {
     private void loadConfig() {
         try {
             // Try to load from classpath
-            InputStream is = getClass().getClassLoader().getResourceAsStream("application.properties");
-            if (is != null) {
-                config.load(is);
-                // BUG: InputStream never closed
+            try (InputStream is = getClass().getClassLoader().getResourceAsStream("application.properties")) {
+                if (is != null) {
+                    config.load(is);
+                }
             }
             
             // Override with environment variables
