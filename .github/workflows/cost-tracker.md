@@ -33,8 +33,6 @@ tools:
 
 engine:
   id: copilot
-  env:
-    GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 timeout-minutes: 10
 
