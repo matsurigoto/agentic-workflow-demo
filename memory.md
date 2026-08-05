@@ -13,8 +13,8 @@
 4. **[DONE] getAllTasks() no pagination** - Branch: perf-assist/add-task-list-pagination
 5. **[DONE] DatabaseHelper resource leaks** - Branch: perf-assist/fix-databasehelper-resource-leaks
 6. **[DONE] getOverdueTasks() full-table-scan + O(n²) sort** - Branch: perf-assist/optimize-overdue-tasks-query
-7. **due_date stored as String** - typed date column would allow full DB-side date filtering (schema migration needed, needs issue first)
-8. **DateUtils thread-safety** - static SimpleDateFormat not thread-safe; replace with DateTimeFormatter or ThreadLocal<SimpleDateFormat>
+7. **[DONE] DateUtils thread-safety** - Branch: perf-assist/fix-dateutils-thread-safety
+8. **due_date stored as String** - typed date column would allow full DB-side date filtering (schema migration needed, needs issue first)
 9. **findActiveTasks() wrong filter** - JPQL excludes only status=2 but not status=3 (cancelled); minor correctness + index hit
 
 ## Work In Progress
@@ -26,12 +26,13 @@ None.
 - 2026-08-02 run 3: PR - `perf: add pagination to GET /api/tasks` → branch perf-assist/add-task-list-pagination
 - 2026-08-03 run 4: PR - `perf: fix resource leaks in DatabaseHelper using try-with-resources` → branch perf-assist/fix-databasehelper-resource-leaks
 - 2026-08-04 run 5: PR - `perf: push overdue-task filtering to DB, remove O(n²) sort` → branch perf-assist/optimize-overdue-tasks-query
+- 2026-08-05 run 6: PR - `perf: replace SimpleDateFormat with thread-safe DateTimeFormatter in DateUtils` → branch perf-assist/fix-dateutils-thread-safety
 
 ## Backlog Cursor
-Next area: DateUtils thread-safety (item 8) or findActiveTasks() wrong filter (item 9)
+Next area: findActiveTasks() wrong filter (item 9) or due_date stored as String (item 8, needs issue first)
 
 ## Last Run Tasks
-- 2026-08-04 run 5: Task 3 (implement - getOverdueTasks optimization), Task 7 (monthly summary)
+- 2026-08-05 run 6: Task 3 (implement - DateUtils thread-safety fix), Task 7 (monthly summary)
 
 ## Previously Checked Off Items (by maintainer)
 None yet.
