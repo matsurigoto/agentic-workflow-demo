@@ -22,13 +22,11 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     @Query("SELECT t FROM Task t WHERE t.priority >= 3")
     List<Task> findHighPriorityTasks();
     
-    // FIXME: This query is wrong - should be status != 2 (done) and status != 3 (cancelled)
-    @Query("SELECT t FROM Task t WHERE t.status != 2")
+    @Query("SELECT t FROM Task t WHERE t.status != 2 AND t.status != 3")
     List<Task> findActiveTasks();
     
     List<Task> findByType(String type);
     
-    // TODO: add pagination support
-    @Query("SELECT t FROM Task t WHERE t.assignee_id = ?1 AND t.status != 2 ORDER BY t.priority DESC")
+    @Query("SELECT t FROM Task t WHERE t.assignee_id = ?1 AND t.status != 2 AND t.status != 3 ORDER BY t.priority DESC")
     List<Task> findActiveTasksByAssignee(Long assigneeId);
 }
