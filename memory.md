@@ -27,7 +27,7 @@
 - `isWithinRange()` uses exclusive bounds but should be inclusive
 - `TaskController.getTask()` returns 200 with null body when not found (should be 404)
 - `TaskController.deleteTask()` returns 400 for "not found" errors (should be 404)
-- GitHub Actions cannot create PRs in this repo; branches are pushed and issues created with PR links
+- GitHub Actions can create PRs via safeoutputs create_pull_request (branches + PR created)
 
 ## Maintainer Priorities
 
@@ -39,8 +39,8 @@
 2. **DONE**: Regression tests for DateUtils (isWithinRange, addBusinessDays, isOverdue) - branch pushed 2026-08-03
 3. **DONE**: Regression tests for StringUtils.padRight StringIndexOutOfBoundsException - branch pushed 2026-08-03
 4. **DONE**: Controller integration tests - `@WebMvcTest` for TaskController - branch pushed 2026-08-05
-5. **NEXT**: Thread-safety tests for DateUtils (demonstrates issue #5)
-6. **LOW**: Integration tests for TaskService
+5. **DONE**: Thread-safety tests for DateUtils (demonstrates issue #5) - PR created 2026-08-06
+6. **NEXT**: Integration tests for TaskService
 
 ## Work In Progress
 
@@ -51,7 +51,8 @@ None.
 - 2026-08-02: Pushed branch fixing TaskServiceTest (@BeforeEach cleanup, proper assertions) - issue #66
 - 2026-08-03: Pushed branch adding regression tests for DateUtils+StringUtils - issue #71
 - 2026-08-04: Commented on #21 (progress update) and #27 (JaCoCo guidance)
-- 2026-08-05: Pushed branch `test-assist/task-controller-integration-tests` - 13 @WebMvcTest tests for TaskController
+- 2026-08-05: Pushed branch `test-assist/task-controller-integration-tests` - 13 @WebMvcTest tests for TaskController - issue #79
+- 2026-08-06: Created PR for thread-safety regression tests (DateUtils issue #5) - branch `test-assist/dateutils-thread-safety-tests`
 
 ## Task Round-Robin History
 
@@ -61,11 +62,12 @@ None.
 - 2026-08-03 Run 4: Task 3 (Regression tests DateUtils+StringUtils), Task 7 (Monthly Summary)
 - 2026-08-04 Run 5: Task 4 (PR check - no open test-improver PRs), Task 5 (Commented on #21, #27), Task 7 (Monthly Summary)
 - 2026-08-05 Run 6: Task 3 (TaskController integration tests), Task 7 (Monthly Summary)
+- 2026-08-06 Run 7: Task 3 (Thread-safety tests for DateUtils), Task 7 (Monthly Summary)
 
 ## Backlog Cursor
 
 - Issues reviewed: #21, #27 (commented 2026-08-04)
-- Next run should focus on: Task 4 (check PR statuses), Task 5 (comment on testing issues), or Task 3 (thread-safety tests)
+- Next run should focus on: Task 4 (check open PRs), Task 5 (comment on testing issues), or Task 3 (TaskService integration tests)
 
 ## Previously Checked Off Items
 
