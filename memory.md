@@ -14,8 +14,8 @@
 5. **[DONE] DatabaseHelper resource leaks** - Branch: perf-assist/fix-databasehelper-resource-leaks
 6. **[DONE] getOverdueTasks() full-table-scan + O(n²) sort** - Branch: perf-assist/optimize-overdue-tasks-query
 7. **[DONE] DateUtils thread-safety** - Branch: perf-assist/fix-dateutils-thread-safety
-8. **due_date stored as String** - typed date column would allow full DB-side date filtering (schema migration needed, needs issue first)
-9. **findActiveTasks() wrong filter** - JPQL excludes only status=2 but not status=3 (cancelled); minor correctness + index hit
+8. **[DONE] findActiveTasks() wrong filter** - Branch: perf-assist/fix-active-tasks-query
+9. **due_date stored as String** - typed date column would allow full DB-side date filtering (schema migration needed, needs issue first)
 
 ## Work In Progress
 None.
@@ -27,12 +27,13 @@ None.
 - 2026-08-03 run 4: PR - `perf: fix resource leaks in DatabaseHelper using try-with-resources` → branch perf-assist/fix-databasehelper-resource-leaks
 - 2026-08-04 run 5: PR - `perf: push overdue-task filtering to DB, remove O(n²) sort` → branch perf-assist/optimize-overdue-tasks-query
 - 2026-08-05 run 6: PR - `perf: replace SimpleDateFormat with thread-safe DateTimeFormatter in DateUtils` → branch perf-assist/fix-dateutils-thread-safety
+- 2026-08-06 run 7: PR - `perf: fix findActiveTasks/findActiveTasksByAssignee to exclude cancelled tasks` → branch perf-assist/fix-active-tasks-query
 
 ## Backlog Cursor
-Next area: findActiveTasks() wrong filter (item 9) or due_date stored as String (item 8, needs issue first)
+Next area: due_date stored as String (item 9, needs issue first before schema migration)
 
 ## Last Run Tasks
-- 2026-08-05 run 6: Task 3 (implement - DateUtils thread-safety fix), Task 7 (monthly summary)
+- 2026-08-06 run 7: Task 3 (implement - findActiveTasks correctness fix), Task 7 (monthly summary)
 
 ## Previously Checked Off Items (by maintainer)
 None yet.
