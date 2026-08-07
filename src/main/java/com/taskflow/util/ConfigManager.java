@@ -4,23 +4,23 @@ import java.io.*;
 import java.util.*;
 
 /**
- * Configuration manager - Singleton pattern (poorly implemented)
+ * Configuration manager - Singleton pattern
  * 
- * Loads config from properties files and environment variables
- * FIXME: Race condition in getInstance() under concurrent access
+ * Loads config from properties files and environment variables.
+ * Uses initialization-on-demand holder idiom for thread-safe lazy initialization
+ * with no synchronization overhead on the hot path.
  */
 public class ConfigManager {
     
-    private static ConfigManager instance;
     private Properties config;
     private long lastLoadTime;
     
-    // FIXME: Not thread-safe singleton
+    private static final class Holder {
+        static final ConfigManager INSTANCE = new ConfigManager();
+    }
+    
     public static ConfigManager getInstance() {
-        if (instance == null) {
-            instance = new ConfigManager();
-        }
-        return instance;
+        return Holder.INSTANCE;
     }
     
     private ConfigManager() {
@@ -33,8 +33,9 @@ public class ConfigManager {
             // Try to load from classpath
             InputStream is = getClass().getClassLoader().getResourceAsStream("application.properties");
             if (is != null) {
-                config.load(is);
-                // BUG: InputStream never closed
+                try (InputStream autoClose = is) {
+                    config.load(autoClose);
+                }
             }
             
             // Override with environment variables
