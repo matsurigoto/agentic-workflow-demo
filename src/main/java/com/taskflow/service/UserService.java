@@ -208,18 +208,10 @@ public class UserService {
     
     /**
      * Get users by role with active filter
-     * DUPLICATE logic with repository method
+     * Pushes active/deleted filtering to DB instead of loading all by role then filtering in Java.
      */
     public List<User> getActiveUsersByRole(String role) {
-        List<User> users = userRepository.findByRole(role);
-        // Manual filtering because the query doesn't filter by active
-        List<User> activeUsers = new ArrayList<>();
-        for (User user : users) {
-            if (user.isActive() && !user.isDeleted()) {
-                activeUsers.add(user);
-            }
-        }
-        return activeUsers;
+        return userRepository.findActiveUsersByRole(role);
     }
     
     /**
@@ -227,19 +219,11 @@ public class UserService {
      * No notification, no task reassignment
      */
     public int deactivateUsers(List<Long> userIds) {
-        int count = 0;
-        for (Long id : userIds) {
-            try {
-                User user = userRepository.findById(id).orElse(null);
-                if (user != null) {
-                    user.setActive(false);
-                    userRepository.save(user);
-                    count++;
-                }
-            } catch (Exception e) {
-                System.err.println("Failed to deactivate user " + id + ": " + e.getMessage());
-            }
+        if (userIds == null || userIds.isEmpty()) {
+            return 0;
         }
+        int count = userRepository.deactivateByIds(userIds);
+        System.out.println("AUDIT: Bulk deactivated " + count + " users - ids=" + userIds);
         return count;
     }
 }
