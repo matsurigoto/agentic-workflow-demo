@@ -4,7 +4,7 @@
 
 - **Build**: `mvn compile`
 - **Test**: `mvn test`
-- **Coverage**: Not configured (issue #27 requests JaCoCo setup)
+- **Coverage**: `mvn test` → `target/site/jacoco/` (JaCoCo added via PR, issue #27)
 - **Lint/Format**: None configured
 
 **Status**: `mvn test` FAILS in CI sandbox due to Maven local repo permissions (`/home/runner/.m2/repository` not writable). This is an infrastructure constraint, not a code issue.
@@ -36,13 +36,14 @@
 
 ## Testing Backlog (prioritized)
 
-1. **DONE**: Fix `TaskServiceTest` - add @BeforeEach cleanup, proper assertions - branch pushed 2026-08-02
+1. **DONE**: Fix `TaskServiceTest` - add @BeforeEach cleanup, proper assertions - PR #92
 2. **DONE**: Regression tests for DateUtils (isWithinRange, addBusinessDays, isOverdue) - branch pushed 2026-08-03
 3. **DONE**: Regression tests for StringUtils.padRight StringIndexOutOfBoundsException - branch pushed 2026-08-03
 4. **DONE**: Controller integration tests - `@WebMvcTest` for TaskController - branch pushed 2026-08-05
 5. **DONE**: Thread-safety tests for DateUtils (demonstrates issue #5) - PR #87 created 2026-08-06
-6. **DONE**: Improve TaskServiceTest assertions (23 tests, 2 @Disabled) - PR created 2026-08-07
-7. **NEXT**: Test infrastructure — JaCoCo coverage reporting (issue #27)
+6. **DONE**: Improve TaskServiceTest assertions (23 tests, 2 @Disabled) - PR #92 created 2026-08-07
+7. **DONE**: Test infrastructure — JaCoCo coverage reporting - PR created 2026-08-08
+8. **NEXT**: Comment on open testing issues; look for any remaining untested critical paths
 
 ## Work In Progress
 
@@ -55,7 +56,8 @@ None.
 - 2026-08-04: Commented on #21 (progress update) and #27 (JaCoCo guidance)
 - 2026-08-05: Pushed branch `test-assist/task-controller-integration-tests` - 13 @WebMvcTest tests for TaskController - issue #79
 - 2026-08-06: Created PR #87 for thread-safety regression tests (DateUtils issue #5) - branch `test-assist/dateutils-thread-safety-tests`
-- 2026-08-07: Created PR (branch `test-assist/improve-taskservice-assertions`) — 23 tests, 2 @Disabled, @BeforeEach cleanup, real assertions
+- 2026-08-07: Created PR #92 (branch `test-assist/improve-taskservice-assertions`) — 23 tests, 2 @Disabled, @BeforeEach cleanup, real assertions
+- 2026-08-08: Created PR for JaCoCo coverage setup (branch `test-assist/jacoco-coverage-setup`) — closes issue #27
 
 ## Task Round-Robin History
 
@@ -67,11 +69,12 @@ None.
 - 2026-08-05 Run 6: Task 3 (TaskController integration tests), Task 7 (Monthly Summary)
 - 2026-08-06 Run 7: Task 3 (Thread-safety tests for DateUtils), Task 7 (Monthly Summary)
 - 2026-08-07 Run 8: Task 4 (PR #87 ok, no CI failures), Task 3 (Improve TaskServiceTest assertions), Task 7 (Monthly Summary)
+- 2026-08-08 Run 9: Task 4 (PRs #87/#92 ok), Task 6 (JaCoCo coverage setup), Task 7 (Monthly Summary)
 
 ## Backlog Cursor
 
 - Issues reviewed: #21, #27 (commented 2026-08-04)
-- Next run should focus on: Task 6 (Test infrastructure — JaCoCo) or Task 5 (comment on new testing issues)
+- Next run should focus on: Task 5 (comment on new testing issues) and Task 2 (re-evaluate opportunities)
 
 ## Previously Checked Off Items
 
