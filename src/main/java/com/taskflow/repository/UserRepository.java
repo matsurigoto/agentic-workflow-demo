@@ -16,7 +16,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
     
     // FIXME: returns deleted users too
     List<User> findByRole(String role);
-    
+
+    @Query("SELECT u FROM User u WHERE u.role = ?1 AND u.active = true AND u.deleted = false")
+    List<User> findActiveUsersByRole(String role);
+
+    @Query("UPDATE User u SET u.active = false WHERE u.id IN ?1")
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    int deactivateByIds(List<Long> ids);
+
     @Query("SELECT u FROM User u WHERE u.active = true")
     List<User> findActiveUsers();
     
