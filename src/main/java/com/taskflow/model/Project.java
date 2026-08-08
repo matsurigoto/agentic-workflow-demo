@@ -38,10 +38,6 @@ public class Project {
     // budget in cents to avoid floating point... except some entries are in dollars
     private long budget;
     
-    // FIXME: remove - was used for old dashboard
-    private String color;
-    private String icon;
-    
     @Column(length = 2000)
     private String members; // comma-separated user IDs: "1,5,12,23" - terrible design
     

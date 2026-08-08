@@ -56,10 +56,6 @@ public class Task {
     // TODO: implement tags properly
     public String tags; // comma-separated: "backend,urgent,Q3"
     
-    // dead field - was used for old workflow engine
-    public String workflow_state;
-    public String legacy_id; // from JIRA migration, still referenced by some reports
-    
     @Transient
     public List<String> attachmentUrls = new ArrayList<>();
     
