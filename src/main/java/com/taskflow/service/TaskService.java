@@ -8,8 +8,6 @@ import com.taskflow.repository.UserRepository;
 import com.taskflow.repository.ProjectRepository;
 import com.taskflow.util.DatabaseHelper;
 import com.taskflow.util.DateUtils;
-import com.taskflow.util.StringUtils;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -93,7 +91,7 @@ public class TaskService {
         task.updatedDate = new Date();
         
         // Sanitize - but only title, not description (inconsistent)
-        task.title = StringUtils.sanitize(task.getTitle());
+        task.title = sanitizeTitle(task.getTitle());
         
         Task saved = taskRepository.save(task);
         
@@ -146,7 +144,7 @@ public class TaskService {
         
         // Update fields one by one - no builder, no mapper
         if (updatedTask.title != null) {
-            existing.title = StringUtils.sanitize(updatedTask.title);
+            existing.title = sanitizeTitle(updatedTask.title);
         }
         if (updatedTask.description != null) {
             existing.description = updatedTask.description; // FIXME: not sanitized!
@@ -666,5 +664,14 @@ public class TaskService {
         report.append("Overdue: ").append(overdue).append("\n");
         
         return report.toString();
+    }
+
+    /** Strip {@code <script>} tags from user input before persistence. */
+    private static String sanitizeTitle(String input) {
+        if (input == null) return "";
+        return input.replace("<script>", "")
+                    .replace("</script>", "")
+                    .replace("<Script>", "")
+                    .replace("</Script>", "");
     }
 }
