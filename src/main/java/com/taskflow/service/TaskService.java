@@ -652,19 +652,20 @@ public class TaskService {
      */
     @Deprecated
     public String generateWeeklyReport() {
-        List<Task> allTasks = taskRepository.findAll();
+        // Use aggregate COUNT queries instead of loading every Task row twice.
+        // Before: findAll() (all rows) + getOverdueTasks() → another findAll() (all rows again).
+        // After:  3 lightweight COUNT queries — O(1) data transfer regardless of table size.
+        String todayIso = new java.text.SimpleDateFormat("yyyy-MM-dd").format(new Date());
+        long total     = taskRepository.countAll();
+        long completed = taskRepository.countByStatus(STATUS_DONE);
+        long overdue   = taskRepository.countOverdue(todayIso);
+
         StringBuilder report = new StringBuilder();
         report.append("=== Weekly Task Report ===\n");
         report.append("Generated: ").append(new Date()).append("\n\n");
-        
-        report.append("Total tasks: ").append(allTasks.size()).append("\n");
-        
-        long completed = allTasks.stream().filter(t -> t.status == STATUS_DONE).count();
+        report.append("Total tasks: ").append(total).append("\n");
         report.append("Completed: ").append(completed).append("\n");
-        
-        long overdue = getOverdueTasks().size();
         report.append("Overdue: ").append(overdue).append("\n");
-        
         return report.toString();
     }
 }
