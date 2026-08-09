@@ -9,6 +9,26 @@ import java.util.List;
 
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
+
+    /** Count all tasks — used by generateWeeklyReport() to avoid findAll(). */
+    @Query("SELECT COUNT(t) FROM Task t")
+    long countAll();
+
+    /** Count tasks with a specific status — used by generateWeeklyReport(). */
+    @Query("SELECT COUNT(t) FROM Task t WHERE t.status = ?1")
+    long countByStatus(int status);
+
+    /**
+     * Count overdue tasks: non-done, non-cancelled tasks whose due_date is a
+     * non-empty string that compares lexicographically less than today's date
+     * in ISO-8601 format ("yyyy-MM-dd").  This mirrors the DB-side filter
+     * already used in the optimised getOverdueTasks() query.
+     */
+    @Query("SELECT COUNT(t) FROM Task t " +
+           "WHERE t.status != 2 AND t.status != 3 " +
+           "AND t.due_date IS NOT NULL AND t.due_date != '' " +
+           "AND t.due_date < ?1")
+    long countOverdue(String todayIso);
     
     List<Task> findByStatus(int status);
     
