@@ -13,7 +13,8 @@ import com.taskflow.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -58,6 +59,9 @@ public class TaskService {
     // private NotificationService notificationService;
     
     // Hardcoded status values - duplicated from Task model
+    private static final DateTimeFormatter EXPORT_DATE_FMT =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
     private static final int STATUS_TODO = 0;
     private static final int STATUS_IN_PROGRESS = 1;
     private static final int STATUS_DONE = 2;
@@ -556,7 +560,9 @@ public class TaskService {
             csv.append(task.type != null ? task.type : "").append(",");
             csv.append(task.assignee_id != null ? task.assignee_id : "").append(",");
             csv.append(task.due_date != null ? task.due_date : "").append(",");
-            csv.append(task.createdDate != null ? new SimpleDateFormat("yyyy-MM-dd").format(task.createdDate) : "");
+            csv.append(task.createdDate != null
+                    ? EXPORT_DATE_FMT.format(task.createdDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate())
+                    : "");
             csv.append("\n");
         }
         
