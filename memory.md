@@ -18,7 +18,7 @@
 9. **[DONE] ConfigManager thread-unsafe singleton + InputStream leak**
 10. **[DONE] UserService getActiveUsersByRole() in-memory filter + deactivateUsers() N+1**
 11. **[DONE] generateWeeklyReport() double findAll() → 3 COUNT queries**
-12. **due_date stored as String** - typed date column would allow full DB-side date filtering (schema migration needed, needs issue first)
+12. **due_date stored as String** - issue created (#aw_due_date); awaiting maintainer input before schema migration
 13. **NotificationService leaks** - already addressed by PR #95 (efficiency-improver)
 
 ## Work In Progress
@@ -34,13 +34,14 @@ None.
 - 2026-08-06 run 7: PR #90 - `perf: fix findActiveTasks/findActiveTasksByAssignee to exclude cancelled tasks`
 - 2026-08-07 run 8: PR #94 - `perf: fix thread-unsafe singleton and InputStream leak in ConfigManager`
 - 2026-08-08 run 9: PR #100 - `perf: push role+active filter to DB and replace N+1 deactivation with bulk update in UserService`
-- 2026-08-09 run 10: PR - `perf: replace double findAll() in generateWeeklyReport() with COUNT queries`
+- 2026-08-09 run 10: PR #105 - `perf: replace double findAll() in generateWeeklyReport() with COUNT queries`
+- 2026-08-10 run 11: Issue created for due_date String → typed DATE migration
 
 ## Backlog Cursor
-Next area: due_date stored as String (item 12, needs issue first before any schema migration)
+All identified opportunities have been addressed or have active issues/PRs. Next: monitor PRs for merge and look for new opportunities if new code is added.
 
 ## Last Run Tasks
-- 2026-08-09 run 10: Task 3 (implement - generateWeeklyReport() double findAll()), Task 7 (monthly summary)
+- 2026-08-10 run 11: Task 2 (identify opportunities - all addressed, created due_date issue), Task 7 (monthly summary)
 
 ## Previously Checked Off Items (by maintainer)
 None yet.
