@@ -31,6 +31,8 @@
 - GitHub Actions can create PRs via safeoutputs create_pull_request (branches + PR created)
 - `UserService.authenticate()`: timing attack, plaintext password - documented bugs, don't fix in tests
 - `UserService` uses `@BeforeEach userRepository.deleteAll()` to isolate tests (same as TaskServiceTest pattern)
+- `UserController` DELETE/PUT return 400 (not 404) when resource not found — documented in tests
+- `UserController` returns reset token in password-reset response (security bug) — documented in tests
 
 ## Maintainer Priorities
 
@@ -45,8 +47,9 @@
 5. **DONE**: Thread-safety tests for DateUtils (demonstrates issue #5) - PR #87 created 2026-08-06
 6. **DONE**: Improve TaskServiceTest assertions (23 tests, 2 @Disabled) - PR #92 created 2026-08-07
 7. **DONE**: Test infrastructure — JaCoCo coverage reporting - issue #97 (blocked on protected pom.xml)
-8. **DONE**: UserService tests - authentication, display name, role filtering, bulk deactivation - PR created 2026-08-09
-9. **NEXT**: UserController and ProjectController @WebMvcTest integration tests
+8. **DONE**: UserService tests - authentication, display name, role filtering, bulk deactivation - PR #102 created 2026-08-09
+9. **DONE**: UserController @WebMvcTest integration tests - 20 tests - PR created 2026-08-10
+10. **NEXT**: ProjectController @WebMvcTest integration tests (uses ProjectRepository + TaskService)
 
 ## Work In Progress
 
@@ -61,7 +64,8 @@ None.
 - 2026-08-06: Created PR #87 for thread-safety regression tests (DateUtils issue #5) - branch `test-assist/dateutils-thread-safety-tests`
 - 2026-08-07: Created PR #92 (branch `test-assist/improve-taskservice-assertions`) — 23 tests, 2 @Disabled, @BeforeEach cleanup, real assertions
 - 2026-08-08: Created issue #97 for JaCoCo (pom.xml protected, manual steps provided)
-- 2026-08-09: Created PR for UserServiceTest (branch `test-assist/userservice-tests`) — 14 tests: createUser, authenticate, getUserDisplayName, getActiveUsersByRole, deactivateUsers
+- 2026-08-09: Created PR #102 for UserServiceTest (branch `test-assist/userservice-tests`) — 14 tests: createUser, authenticate, getUserDisplayName, getActiveUsersByRole, deactivateUsers
+- 2026-08-10: Created PR for UserControllerTest (branch `test-assist/usercontroller-webmvctest`) — 20 @WebMvcTest tests covering all endpoints
 
 ## Task Round-Robin History
 
@@ -75,11 +79,12 @@ None.
 - 2026-08-07 Run 8: Task 4 (PR #87 ok, no CI failures), Task 3 (Improve TaskServiceTest assertions), Task 7 (Monthly Summary)
 - 2026-08-08 Run 9: Task 4 (PRs #87/#92 ok), Task 6 (JaCoCo coverage setup → issue #97), Task 7 (Monthly Summary)
 - 2026-08-09 Run 10: Task 4 (PRs #87/#92 ok), Task 3 (UserServiceTest - 14 tests), Task 7 (Monthly Summary)
+- 2026-08-10 Run 11: Task 4 (PRs #87/#92/#102 open), Task 3 (UserControllerTest - 20 tests), Task 7 (Monthly Summary)
 
 ## Backlog Cursor
 
 - Issues reviewed: #21, #27 (commented 2026-08-04)
-- Next run should focus on: Task 4 (check PRs), Task 3 (UserController/@WebMvcTest or ProjectController tests)
+- Next run should focus on: Task 4 (check PRs), Task 3 (ProjectController @WebMvcTest tests)
 
 ## Previously Checked Off Items
 
