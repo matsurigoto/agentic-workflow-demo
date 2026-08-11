@@ -1,7 +1,7 @@
 # Efficiency Improver Memory — matsurigoto/agentic-workflow-demo
 
 ## Last Updated
-2026-08-10
+2026-08-11
 
 ## Discovered Commands
 - **Build**: `mvn -Dmaven.repo.local=/tmp/gh-aw/agent/m2 package -DskipTests`
@@ -19,7 +19,8 @@
 - NotificationService: resource leaks (OutputStream + HttpURLConnection) now fixed (branch 2026-08-07, PR #95)
 - Dead code removed: getOldDashboardStats, migrateLegacyIds, generateWeeklyReport, workflow_state, legacy_id, color, icon (PR #101, open)
 - StringUtils.java: removed and replaced with Apache Commons Lang3 (PR #106, open)
-- exportTasksAsCsv: had new SimpleDateFormat inside loop; now static DateTimeFormatter (PR created 2026-08-10)
+- exportTasksAsCsv: had new SimpleDateFormat inside loop; now static DateTimeFormatter (PR #111, open)
+- deactivateUsers(): N×(findById+save) replaced with single @Modifying bulk UPDATE (PR created 2026-08-11)
 
 ## Optimisation Backlog
 
@@ -31,7 +32,7 @@
 | LOW | Code | `System.out/err.println` used for audit/logging throughout | LOW |
 
 ## Backlog Cursor
-- Next scan: Task 6 (JMH benchmark — wait for maintainer sign-off on #96), Task 3 (look for new opportunities)
+- Next scan: Task 5 (check new issues), Task 4 (PR maintenance)
 
 ## Work In Progress
 None
@@ -46,12 +47,13 @@ None
 - **2026-08-07**: PR #95 created — close OutputStream+HttpURLConnection in NotificationService; issue #96 for JMH benchmarks
 - **2026-08-08**: PR #101 created — remove dead code (3 methods + 6 fields); commented on #18 and #23
 - **2026-08-09**: PR #106 created — replace custom StringUtils (229 lines) with Apache Commons Lang3
-- **2026-08-10**: PR created — replace per-iteration SimpleDateFormat with static DateTimeFormatter in exportTasksAsCsv; commented on #110
+- **2026-08-10**: PR #111 created — replace per-iteration SimpleDateFormat with static DateTimeFormatter in exportTasksAsCsv; commented on #110
+- **2026-08-11**: PR created — replace N×(findById+save) in deactivateUsers() with single @Modifying bulk UPDATE
 
 ## Tasks Last Run (for round-robin)
-- 2026-08-09: Task 3 (StringUtils removal), Task 7
 - 2026-08-10: Task 3 (SDF→DateTimeFormatter), Task 4 (PR check), Task 5 (#110 comment), Task 7
-- Next run should focus: Task 6 (JMH benchmark infrastructure, if #96 has maintainer sign-off), Task 5 (new issues)
+- 2026-08-11: Task 3 (deactivateUsers batch), Task 7
+- Next run should focus: Task 4 (PR maintenance), Task 5 (new issues), Task 6 (JMH benchmarks if #96 signed off)
 
 ## Issues Commented On (Task 5)
 - #20 (DatabaseHelper → JPA): 2026-08-01
