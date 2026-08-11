@@ -6,6 +6,7 @@ import com.taskflow.util.StringUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -226,20 +227,11 @@ public class UserService {
      * Bulk deactivate users - used for "offboarding"
      * No notification, no task reassignment
      */
+    @Transactional
     public int deactivateUsers(List<Long> userIds) {
-        int count = 0;
-        for (Long id : userIds) {
-            try {
-                User user = userRepository.findById(id).orElse(null);
-                if (user != null) {
-                    user.setActive(false);
-                    userRepository.save(user);
-                    count++;
-                }
-            } catch (Exception e) {
-                System.err.println("Failed to deactivate user " + id + ": " + e.getMessage());
-            }
+        if (userIds == null || userIds.isEmpty()) {
+            return 0;
         }
-        return count;
+        return userRepository.deactivateByIds(userIds);
     }
 }
