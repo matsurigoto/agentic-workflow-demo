@@ -502,7 +502,7 @@ public class TaskService {
      * FIXME: No transaction management, partial imports leave inconsistent state
      */
     public List<Task> importTasks(String csvData) {
-        List<Task> imported = new ArrayList<>();
+        List<Task> toSave = new ArrayList<>();
         String[] lines = csvData.split("\n");
         
         for (int i = 1; i < lines.length; i++) { // skip header
@@ -519,15 +519,16 @@ public class TaskService {
                 task.status = STATUS_TODO;
                 task.createdDate = new Date();
                 
-                Task saved = taskRepository.save(task);
-                imported.add(saved);
+                toSave.add(task);
                 
             } catch (Exception e) {
                 // Skip bad lines silently
-                System.err.println("Failed to import line " + i + ": " + e.getMessage());
+                System.err.println("Failed to parse import line " + i + ": " + e.getMessage());
             }
         }
         
+        // Batch-insert all parsed tasks in a single round-trip instead of N individual saves
+        List<Task> imported = taskRepository.saveAll(toSave);
         System.out.println("Imported " + imported.size() + " tasks out of " + (lines.length - 1));
         return imported;
     }
