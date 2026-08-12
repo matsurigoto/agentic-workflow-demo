@@ -328,16 +328,8 @@ public class TaskService {
             }
         }
         
-        // Sort by priority (highest first) - manual sort instead of using Comparator
-        for (int i = 0; i < overdue.size(); i++) {
-            for (int j = i + 1; j < overdue.size(); j++) {
-                if (overdue.get(i).priority < overdue.get(j).priority) {
-                    Task temp = overdue.get(i);
-                    overdue.set(i, overdue.get(j));
-                    overdue.set(j, temp);
-                }
-            }
-        }
+        // Sort by priority descending (highest first)
+        overdue.sort(Comparator.comparingInt((Task t) -> t.priority).reversed());
         
         return overdue;
     }
@@ -462,8 +454,13 @@ public class TaskService {
         stats.put("features", allTasks.stream().filter(t -> "feature".equals(t.type)).count());
         stats.put("tasks", allTasks.stream().filter(t -> "task".equals(t.type)).count());
         
-        // Overdue count - calls the slow method again
-        stats.put("overdue", getOverdueTasks().size());
+        // Overdue count - filter from already-loaded allTasks to avoid a second findAll()
+        long overdueCount = allTasks.stream()
+                .filter(t -> t.status != STATUS_DONE && t.status != STATUS_CANCELLED)
+                .filter(t -> t.due_date != null && !t.due_date.isEmpty())
+                .filter(t -> DateUtils.isOverdue(t.due_date))
+                .count();
+        stats.put("overdue", overdueCount);
         
         // Average time - manual calculation
         int totalEstimated = 0;
