@@ -20,7 +20,8 @@
 11. **[DONE] generateWeeklyReport() double findAll() → 3 COUNT queries**
 12. **[DONE] importTasks() N individual saves → saveAll() batch insert**
 13. **due_date stored as String** - issue #110 created; awaiting maintainer input before schema migration
-14. **NotificationService leaks** - already addressed by PR #95 (efficiency-improver)
+14. **NEW: GET /api/users no pagination** - UserService.getAllUsers() calls findAll() unbounded
+15. **NEW: GET /api/projects no pagination** - ProjectController calls findAll() unbounded
 
 ## Work In Progress
 None.
@@ -37,13 +38,14 @@ None.
 - 2026-08-08 run 9: PR #100 - `perf: push role+active filter to DB and replace N+1 deactivation with bulk update in UserService`
 - 2026-08-09 run 10: PR #105 - `perf: replace double findAll() in generateWeeklyReport() with COUNT queries`
 - 2026-08-10 run 11: Issue #110 created for due_date String → typed DATE migration
-- 2026-08-11 run 12: PR (perf-assist/batch-import-saveall) - `perf: replace N individual saves in importTasks() with saveAll() batch insert`
+- 2026-08-11 run 12: PR #114 (perf-assist/batch-import-saveall) - `perf: replace N individual saves in importTasks() with saveAll() batch insert`
+- 2026-08-12 run 13: Task 2 scan - found 2 new pagination gaps (users, projects); Task 4 - checked PRs, no CI failures
 
 ## Backlog Cursor
-All identified opportunities addressed or have active issues/PRs. Remaining: due_date migration (awaiting maintainer sign-off), monitor for new code.
+Next: implement pagination for GET /api/users (#14 above).
 
 ## Last Run Tasks
-- 2026-08-11 run 12: Task 3 (importTasks batch insert PR), Task 7 (monthly summary)
+- 2026-08-12 run 13: Task 2 (found new opps), Task 4 (PR health check), Task 7 (monthly summary)
 
 ## Previously Checked Off Items (by maintainer)
 None yet.
