@@ -36,6 +36,9 @@
 - `ProjectController` uses repository directly (no service layer) — returns 200 not 201 on create; addMember doesn't dedup
 - `Project.getProgress()` divides by zero when taskCount=0 (double NaN, no exception)
 - `Project.getMemberIds()` NPE on null members, NumberFormatException on empty string or whitespace IDs
+- `TaskService.importTasks()`: splits on ',' without handling RFC-4180 quoted fields (comma in title breaks)
+- `TaskService.importTasks()`: silently skips lines with invalid priority (NumberFormatException swallowed)
+- `TaskService.exportTasks()`: does not escape commas in task titles/descriptions — corrupts CSV format
 
 ## Maintainer Priorities
 
@@ -53,8 +56,9 @@
 8. **DONE**: UserService tests - authentication, display name, role filtering, bulk deactivation - PR #102 created 2026-08-09
 9. **DONE**: UserController @WebMvcTest integration tests - 20 tests - PR #107 created 2026-08-10
 10. **DONE**: ProjectController @WebMvcTest integration tests - 18 tests - PR #112 created 2026-08-11
-11. **DONE**: Project model unit tests - getMemberIds() and getProgress() - PR created 2026-08-12
-12. **NEXT**: TaskController/TaskService edge cases for import/export, or UserService.authenticate() security regression tests
+11. **DONE**: Project model unit tests - getMemberIds() and getProgress() - PR #116 created 2026-08-12
+12. **DONE**: TaskService import/export edge cases - 13 tests, 2 @Disabled bug docs - PR created 2026-08-13
+13. **NEXT**: Create PR for TaskController @WebMvcTest (branch exists: test-assist/task-controller-integration-tests), or UserService.authenticate() security regression tests
 
 ## Work In Progress
 
@@ -72,7 +76,8 @@ None.
 - 2026-08-09: Created PR #102 for UserServiceTest (branch `test-assist/userservice-tests`) — 14 tests: createUser, authenticate, getUserDisplayName, getActiveUsersByRole, deactivateUsers
 - 2026-08-10: Created PR #107 for UserControllerTest (branch `test-assist/usercontroller-webmvctest`) — 20 @WebMvcTest tests covering all endpoints
 - 2026-08-11: Created PR #112 for ProjectControllerTest (branch `test-assist/projectcontroller-webmvctest`) — 18 @WebMvcTest tests covering all 8 endpoints
-- 2026-08-12: Created PR for ProjectTest (branch `test-assist/project-model-unit-tests`) — 11 unit tests; 4 @Disabled tests documenting NPE/div-by-zero/NumberFormatException bugs
+- 2026-08-12: Created PR #116 for ProjectTest (branch `test-assist/project-model-unit-tests`) — 11 unit tests; 4 @Disabled tests documenting NPE/div-by-zero/NumberFormatException bugs
+- 2026-08-13: Created PR for TaskImportExportTest (branch `test-assist/taskservice-import-export-tests`) — 13 tests; 2 @Disabled documenting CSV escaping bugs
 
 ## Task Round-Robin History
 
@@ -89,11 +94,12 @@ None.
 - 2026-08-10 Run 11: Task 4 (PRs #87/#92/#102 open), Task 3 (UserControllerTest - 20 tests), Task 7 (Monthly Summary)
 - 2026-08-11 Run 12: Task 4 (PRs #87/#92/#102/#107 open), Task 3 (ProjectControllerTest - 18 tests), Task 7 (Monthly Summary)
 - 2026-08-12 Run 13: Task 4 (PRs #87/#92/#102/#107/#112 open), Task 3 (ProjectTest - 11 unit tests), Task 7 (Monthly Summary)
+- 2026-08-13 Run 14: Task 4 (PRs #87/#92/#102/#107/#112/#116 open), Task 3 (TaskImportExportTest - 13 tests), Task 7 (Monthly Summary)
 
 ## Backlog Cursor
 
 - Issues reviewed: #21, #27 (commented 2026-08-04)
-- Next run should focus on: Task 4 (check PRs), Task 3 (TaskService import/export edge cases or UserService.authenticate security regression)
+- Next run: Task 4 (check PRs), Task 3 (create PR for TaskController branch, or UserService.authenticate security tests)
 
 ## Previously Checked Off Items
 
