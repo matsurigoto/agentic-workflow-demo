@@ -1,39 +1,39 @@
 # Efficiency Improver Memory — matsurigoto/agentic-workflow-demo
 
 ## Last Updated
-2026-08-12
+2026-08-13
 
 ## Discovered Commands
 - **Build**: `mvn -Dmaven.repo.local=/tmp/gh-aw/agent/m2 package -DskipTests`
 - **Test**: `mvn -Dmaven.repo.local=/tmp/gh-aw/agent/m2 test`
 - **Note**: Default m2 repo at `~/.m2` is not writable; always use `-Dmaven.repo.local=/tmp/gh-aw/agent/m2`
-- **Pre-existing test failures** (on main): `DateUtilsTest.testGetQuarter` (date boundary), `TaskServiceTest.testGetTaskStatistics` (ArithmeticException divide-by-zero)
+- **Pre-existing test failures** (on main): `DateUtilsTest.testGetQuarter` (date boundary only — TaskServiceTest divide-by-zero now fixed)
 
 ## Efficiency Notes
 - DatabaseHelper uses raw JDBC with shared static Connection (not thread-safe)
 - Spring JPA repositories also exist; prefer them over DatabaseHelper for new code
-- TaskService is a 700+ line god class (now ~620 lines after dead code removal PR #101, not merged yet)
-- `due_date` stored as free-form multi-format string — hard to push date comparisons to DB (perf-improver #110 proposes schema migration)
-- ConfigManager: singleton with race condition; InputStream leak now fixed (branch exists)
-- mysql-connector-java: removed from pom.xml (PR created 2026-08-06)
-- NotificationService: resource leaks (OutputStream + HttpURLConnection) now fixed (branch 2026-08-07, PR #95)
-- Dead code removed: getOldDashboardStats, migrateLegacyIds, generateWeeklyReport, workflow_state, legacy_id, color, icon (PR #101, open)
-- StringUtils.java: removed and replaced with Apache Commons Lang3 (PR #106, open)
-- exportTasksAsCsv: had new SimpleDateFormat inside loop; now static DateTimeFormatter (PR #111, open)
-- deactivateUsers(): N×(findById+save) replaced with single @Modifying bulk UPDATE (PR #115, open)
-- getOverdueTasks(): O(n²) bubble sort replaced with List.sort()+Comparator; getTaskStatistics() double findAll() eliminated (PR created 2026-08-12)
+- TaskService is ~620 lines (dead code removal PR #101 not yet merged)
+- `due_date` stored as free-form multi-format string — hard to push date comparisons to DB
+- ConfigManager: singleton with race condition; InputStream leak fixed (branch exists, not merged)
+- mysql-connector-java: removed from pom.xml (PR created 2026-08-06, not merged)
+- NotificationService: resource leaks fixed (PR #95, open)
+- Dead code: PR #101 open
+- StringUtils: replaced with Commons Lang3 (PR #106, open)
+- exportTasksAsCsv: static DateTimeFormatter (PR #111, open)
+- deactivateUsers(): bulk UPDATE (PR #115, open)
+- getOverdueTasks(): O(n²) sort → List.sort() (PR #119, open)
+- getTaskStatistics(): 13 passes → 1 pass + 2nd findAll() eliminated + divide-by-zero fixed (PR branch efficiency/single-pass-task-statistics, pending)
 
 ## Optimisation Backlog
 
 | Priority | Focus Area | Opportunity | Estimated Impact |
 |---|---|---|---|
-| HIGH | Data | `getOverdueTasks()` still does `findAll()` — deferring full DB push to perf-improver #110; our PR addresses sort + double-load | HIGH if table grows |
 | HIGH | Data | `getAllTasks()` has no pagination — unbounded `findAll()` (perf-improver #69 also on this) | HIGH at scale |
-| MEDIUM | Network/IO | `notifyUsers()` sends sequentially — stub impl so no real I/O gain currently | LOW until real channels |
+| MEDIUM | Network/IO | `notifyUsers()` sends sequentially — stub impl, low gain until real channels | LOW currently |
 | LOW | Code | `System.out/err.println` used for audit/logging throughout | LOW |
 
 ## Backlog Cursor
-- Next scan: Task 5 (check new efficiency issues), Task 6 (JMH if #96 signed off)
+- Next scan: Task 4 (PR maintenance check), Task 6 (JMH if #96 signed off)
 
 ## Work In Progress
 None
@@ -49,13 +49,14 @@ None
 - **2026-08-08**: PR #101 created — remove dead code (3 methods + 6 fields); commented on #18 and #23
 - **2026-08-09**: PR #106 created — replace custom StringUtils (229 lines) with Apache Commons Lang3
 - **2026-08-10**: PR #111 created — replace per-iteration SimpleDateFormat with static DateTimeFormatter in exportTasksAsCsv; commented on #110
-- **2026-08-11**: PR #115 created — replace N×(findById+save) in deactivateUsers() with single @Modifying bulk UPDATE
-- **2026-08-12**: PR created — replace O(n²) bubble sort with List.sort()+Comparator in getOverdueTasks(); eliminate double findAll() in getTaskStatistics()
+- **2026-08-11**: PR #115 created — replace N×2 DB calls in deactivateUsers() with single @Modifying bulk UPDATE
+- **2026-08-12**: PR #119 created — replace O(n²) bubble sort with List.sort()+Comparator in getOverdueTasks(); eliminate double findAll() in getTaskStatistics()
+- **2026-08-13**: PR created (branch: efficiency/single-pass-task-statistics) — consolidate 13 iteration passes in getTaskStatistics() into one O(n) loop; inline overdue count to eliminate 2nd findAll(); fix divide-by-zero
 
 ## Tasks Last Run (for round-robin)
-- 2026-08-11: Task 3 (deactivateUsers batch), Task 7
-- 2026-08-12: Task 3 (overdue sort + double findAll), Task 4 (PR check), Task 7
-- Next run should focus: Task 5 (new efficiency issues), Task 6 (JMH benchmarks)
+- 2026-08-12: Task 3, Task 4, Task 7
+- 2026-08-13: Task 3, Task 5, Task 7
+- Next run should focus: Task 4 (PR check), Task 6 (JMH)
 
 ## Issues Commented On (Task 5)
 - #20 (DatabaseHelper → JPA): 2026-08-01
