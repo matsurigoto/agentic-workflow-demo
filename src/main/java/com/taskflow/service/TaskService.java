@@ -443,44 +443,65 @@ public class TaskService {
         
         stats.put("total", allTasks.size());
         
-        // Count by status - O(n) for each status
-        stats.put("todo", allTasks.stream().filter(t -> t.status == STATUS_TODO).count());
-        stats.put("inProgress", allTasks.stream().filter(t -> t.status == STATUS_IN_PROGRESS).count());
-        stats.put("done", allTasks.stream().filter(t -> t.status == STATUS_DONE).count());
-        stats.put("cancelled", allTasks.stream().filter(t -> t.status == STATUS_CANCELLED).count());
-        stats.put("blocked", allTasks.stream().filter(t -> t.status == STATUS_BLOCKED).count());
-        stats.put("review", allTasks.stream().filter(t -> t.status == STATUS_REVIEW).count());
-        
-        // Count by priority
-        stats.put("critical", allTasks.stream().filter(t -> t.priority >= PRIORITY_CRITICAL).count());
-        stats.put("high", allTasks.stream().filter(t -> t.priority == PRIORITY_HIGH).count());
-        stats.put("medium", allTasks.stream().filter(t -> t.priority == PRIORITY_MEDIUM).count());
-        stats.put("low", allTasks.stream().filter(t -> t.priority == PRIORITY_LOW).count());
-        
-        // Count by type
-        stats.put("bugs", allTasks.stream().filter(t -> "bug".equals(t.type)).count());
-        stats.put("features", allTasks.stream().filter(t -> "feature".equals(t.type)).count());
-        stats.put("tasks", allTasks.stream().filter(t -> "task".equals(t.type)).count());
-        
-        // Overdue count - calls the slow method again
-        stats.put("overdue", getOverdueTasks().size());
-        
-        // Average time - manual calculation
-        int totalEstimated = 0;
-        int totalActual = 0;
-        int completedCount = 0;
+        // Single pass over all tasks to compute all counts and averages.
+        // Replaces 12 separate stream passes (each O(n)) with one O(n) loop,
+        // reducing CPU instructions and JVM object allocation ~12×.
+        long todo = 0, inProgress = 0, done = 0, cancelled = 0, blocked = 0, review = 0;
+        long critical = 0, high = 0, medium = 0, low = 0;
+        long bugs = 0, features = 0, tasks = 0;
+        long overdue = 0;
+        int totalEstimated = 0, totalActual = 0, completedCount = 0;
         for (Task t : allTasks) {
-            if (t.status == STATUS_DONE) {
-                totalEstimated += t.estimated_hours;
-                totalActual += t.actual_hours;
-                completedCount++;
+            switch (t.status) {
+                case STATUS_TODO:        todo++;        break;
+                case STATUS_IN_PROGRESS: inProgress++;  break;
+                case STATUS_DONE:        done++;
+                    totalEstimated += t.estimated_hours;
+                    totalActual    += t.actual_hours;
+                    completedCount++;
+                    break;
+                case STATUS_CANCELLED:   cancelled++;   break;
+                case STATUS_BLOCKED:     blocked++;     break;
+                case STATUS_REVIEW:      review++;      break;
+            }
+            if (t.priority >= PRIORITY_CRITICAL)      critical++;
+            else if (t.priority == PRIORITY_HIGH)     high++;
+            else if (t.priority == PRIORITY_MEDIUM)   medium++;
+            else if (t.priority == PRIORITY_LOW)      low++;
+            if ("bug".equals(t.type))          bugs++;
+            else if ("feature".equals(t.type)) features++;
+            else if ("task".equals(t.type))    tasks++;
+            if (t.status != STATUS_DONE && t.status != STATUS_CANCELLED
+                    && t.due_date != null && !t.due_date.isEmpty()
+                    && DateUtils.isOverdue(t.due_date)) {
+                overdue++;
             }
         }
         
-        // BUG: division by zero when no tasks are completed
-        stats.put("avgEstimated", totalEstimated / completedCount);
-        stats.put("avgActual", totalActual / completedCount);
-        stats.put("estimateAccuracy", (double) totalActual / totalEstimated * 100);
+        stats.put("todo",       todo);
+        stats.put("inProgress", inProgress);
+        stats.put("done",       done);
+        stats.put("cancelled",  cancelled);
+        stats.put("blocked",    blocked);
+        stats.put("review",     review);
+        stats.put("critical",   critical);
+        stats.put("high",       high);
+        stats.put("medium",     medium);
+        stats.put("low",        low);
+        stats.put("bugs",       bugs);
+        stats.put("features",   features);
+        stats.put("tasks",      tasks);
+        stats.put("overdue",    overdue);
+        
+        if (completedCount > 0) {
+            stats.put("avgEstimated",    totalEstimated / completedCount);
+            stats.put("avgActual",       totalActual    / completedCount);
+            stats.put("estimateAccuracy", (double) totalActual / totalEstimated * 100);
+        } else {
+            stats.put("avgEstimated",    0);
+            stats.put("avgActual",       0);
+            stats.put("estimateAccuracy", 0.0);
+        }
         
         return stats;
     }
