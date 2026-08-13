@@ -5,6 +5,9 @@ import com.taskflow.repository.ProjectRepository;
 import com.taskflow.service.TaskService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,9 +32,16 @@ public class ProjectController {
     @Autowired
     private TaskService taskService;
     
+    private static final int DEFAULT_PAGE_SIZE = 50;
+    private static final int MAX_PAGE_SIZE = 200;
+
     @GetMapping
-    public List<Project> getAllProjects() {
-        return projectRepository.findAll();
+    public Page<Project> getAllProjects(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size) {
+        int effectiveSize = Math.min(size, MAX_PAGE_SIZE);
+        Pageable pageable = PageRequest.of(page, effectiveSize);
+        return projectRepository.findAll(pageable);
     }
     
     @GetMapping("/{id}")

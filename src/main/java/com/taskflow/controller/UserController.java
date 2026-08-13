@@ -4,6 +4,7 @@ import com.taskflow.model.User;
 import com.taskflow.service.UserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,9 +25,11 @@ public class UserController {
     private UserService userService;
     
     @GetMapping
-    public List<User> getAllUsers() {
+    public Page<User> getAllUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size) {
         // SECURITY: Returns password field in response!
-        return userService.getAllUsers();
+        return userService.getAllUsersPaged(page, size);
     }
     
     @GetMapping("/{id}")
