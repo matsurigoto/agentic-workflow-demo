@@ -5,6 +5,9 @@ import com.taskflow.repository.UserRepository;
 import com.taskflow.util.StringUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -90,6 +93,18 @@ public class UserService {
      */
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+    private static final int DEFAULT_PAGE_SIZE = 50;
+    private static final int MAX_PAGE_SIZE = 200;
+
+    /**
+     * Get users with pagination. page is 0-based; size capped at MAX_PAGE_SIZE.
+     */
+    public Page<User> getAllUsersPaged(int page, int size) {
+        int effectiveSize = Math.min(size, MAX_PAGE_SIZE);
+        Pageable pageable = PageRequest.of(page, effectiveSize);
+        return userRepository.findAll(pageable);
     }
     
     /**
