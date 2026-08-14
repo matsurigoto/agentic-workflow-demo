@@ -49,7 +49,7 @@
 1. **DONE**: Fix `TaskServiceTest` - add @BeforeEach cleanup, proper assertions - PR #92
 2. **DONE**: Regression tests for DateUtils (isWithinRange, addBusinessDays, isOverdue) - branch pushed 2026-08-03
 3. **DONE**: Regression tests for StringUtils.padRight StringIndexOutOfBoundsException - branch pushed 2026-08-03
-4. **DONE**: Controller integration tests - `@WebMvcTest` for TaskController - branch pushed 2026-08-05
+4. **DONE**: Controller integration tests - `@WebMvcTest` for TaskController - PR created 2026-08-14
 5. **DONE**: Thread-safety tests for DateUtils (demonstrates issue #5) - PR #87 created 2026-08-06
 6. **DONE**: Improve TaskServiceTest assertions (23 tests, 2 @Disabled) - PR #92 created 2026-08-07
 7. **DONE**: Test infrastructure — JaCoCo coverage reporting - issue #97 (blocked on protected pom.xml)
@@ -57,8 +57,9 @@
 9. **DONE**: UserController @WebMvcTest integration tests - 20 tests - PR #107 created 2026-08-10
 10. **DONE**: ProjectController @WebMvcTest integration tests - 18 tests - PR #112 created 2026-08-11
 11. **DONE**: Project model unit tests - getMemberIds() and getProgress() - PR #116 created 2026-08-12
-12. **DONE**: TaskService import/export edge cases - 13 tests, 2 @Disabled bug docs - PR created 2026-08-13
-13. **NEXT**: Create PR for TaskController @WebMvcTest (branch exists: test-assist/task-controller-integration-tests), or UserService.authenticate() security regression tests
+12. **DONE**: TaskService import/export edge cases - 13 tests, 2 @Disabled bug docs - PR #120 created 2026-08-13
+13. **DONE**: TaskController @WebMvcTest integration tests - 22 tests - PR created 2026-08-14
+14. **NEXT**: NotificationService or ConfigManager unit tests; or UserService.authenticate() security regression tests
 
 ## Work In Progress
 
@@ -77,7 +78,8 @@ None.
 - 2026-08-10: Created PR #107 for UserControllerTest (branch `test-assist/usercontroller-webmvctest`) — 20 @WebMvcTest tests covering all endpoints
 - 2026-08-11: Created PR #112 for ProjectControllerTest (branch `test-assist/projectcontroller-webmvctest`) — 18 @WebMvcTest tests covering all 8 endpoints
 - 2026-08-12: Created PR #116 for ProjectTest (branch `test-assist/project-model-unit-tests`) — 11 unit tests; 4 @Disabled tests documenting NPE/div-by-zero/NumberFormatException bugs
-- 2026-08-13: Created PR for TaskImportExportTest (branch `test-assist/taskservice-import-export-tests`) — 13 tests; 2 @Disabled documenting CSV escaping bugs
+- 2026-08-13: Created PR #120 for TaskImportExportTest (branch `test-assist/taskservice-import-export-tests`) — 13 tests; 2 @Disabled documenting CSV escaping bugs
+- 2026-08-14: Created PR for TaskControllerTest (branch `test-assist/taskcontroller-webmvctest`) — 22 @WebMvcTest tests; 1 @Disabled documents 200-not-404 bug; active test documents DELETE 400-not-404 bug
 
 ## Task Round-Robin History
 
@@ -95,11 +97,12 @@ None.
 - 2026-08-11 Run 12: Task 4 (PRs #87/#92/#102/#107 open), Task 3 (ProjectControllerTest - 18 tests), Task 7 (Monthly Summary)
 - 2026-08-12 Run 13: Task 4 (PRs #87/#92/#102/#107/#112 open), Task 3 (ProjectTest - 11 unit tests), Task 7 (Monthly Summary)
 - 2026-08-13 Run 14: Task 4 (PRs #87/#92/#102/#107/#112/#116 open), Task 3 (TaskImportExportTest - 13 tests), Task 7 (Monthly Summary)
+- 2026-08-14 Run 15: Task 3 (TaskControllerTest - 22 @WebMvcTest tests), Task 7 (Monthly Summary)
 
 ## Backlog Cursor
 
 - Issues reviewed: #21, #27 (commented 2026-08-04)
-- Next run: Task 4 (check PRs), Task 3 (create PR for TaskController branch, or UserService.authenticate security tests)
+- Next run: Task 4 (check open PRs), Task 3 (NotificationService or ConfigManager tests, or UserService.authenticate() security regression tests)
 
 ## Previously Checked Off Items
 
