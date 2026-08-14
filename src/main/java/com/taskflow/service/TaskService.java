@@ -11,6 +11,8 @@ import com.taskflow.util.DateUtils;
 import com.taskflow.util.StringUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
@@ -270,10 +272,19 @@ public class TaskService {
     }
     
     /**
-     * Get all tasks - NO PAGINATION, loads everything into memory
+     * Get all tasks - NO PAGINATION, loads everything into memory.
+     * Retained for internal callers (statistics, export). REST clients should use getAllTasksPaged().
      */
     public List<Task> getAllTasks() {
         return taskRepository.findAll(); // Could be thousands of tasks
+    }
+
+    /**
+     * Paginated task list. Limits the number of tasks loaded per request,
+     * capping memory and serialisation work proportional to the requested page size.
+     */
+    public Page<Task> getAllTasksPaged(Pageable pageable) {
+        return taskRepository.findAll(pageable);
     }
     
     /**

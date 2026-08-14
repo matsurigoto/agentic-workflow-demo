@@ -4,6 +4,9 @@ import com.taskflow.model.Task;
 import com.taskflow.service.TaskService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,11 +30,13 @@ public class TaskController {
     private TaskService taskService;
     
     /**
-     * Get all tasks - no pagination, returns everything
+     * Get tasks with pagination. Defaults to page 0, 20 tasks per page.
+     * Use ?page=N&size=M to navigate. Limits memory and serialisation overhead
+     * proportionally to the requested page size rather than the total dataset.
      */
     @GetMapping("/tasks")
-    public List<Task> getAllTasks() {
-        return taskService.getAllTasks();
+    public Page<Task> getAllTasks(@PageableDefault(size = 20) Pageable pageable) {
+        return taskService.getAllTasksPaged(pageable);
     }
     
     /**
