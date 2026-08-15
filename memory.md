@@ -42,13 +42,14 @@ None.
 - 2026-08-11 run 12: PR #114 (perf-assist/batch-import-saveall) - `perf: replace N individual saves in importTasks() with saveAll() batch insert`
 - 2026-08-12 run 13: Task 2 scan - found 2 new pagination gaps (users, projects); Task 4 - checked PRs, no CI failures
 - 2026-08-13 run 14: PR #122 created - `perf: add pagination to GET /api/users and GET /api/projects`
-- 2026-08-14 run 15: Task 2 deep scan - no new major opportunities; identified low-priority NotificationService connection leak (#16 in backlog); Task 5 - no non-perf-improver perf issues; Task 7 - updated monthly summary, fixed #aw_pr_pag2 → #122
+- 2026-08-14 run 15: Task 2 deep scan - no new major opportunities; Task 5 - no issues; Task 7 - updated monthly summary
+- 2026-08-15 run 16: Task 4 - checked all 6 open PRs, still open, no CI failures; Task 7 - updated monthly summary
 
 ## Backlog Cursor
 All major identified opportunities addressed. Remaining: #13 (due_date migration, awaiting maintainer), #16 (NotificationService low priority).
 
 ## Last Run Tasks
-- 2026-08-14 run 15: Task 2 (deep scan), Task 5 (perf issues), Task 7 (monthly summary)
+- 2026-08-15 run 16: Task 4 (PR maintenance check), Task 7 (monthly summary)
 
 ## Previously Checked Off Items (by maintainer)
 None yet.
