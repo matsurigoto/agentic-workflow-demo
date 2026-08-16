@@ -71,9 +71,10 @@ public class NotificationService {
             return false;
         }
         
+        HttpURLConnection conn = null;
         try {
             URL url = new URL(SLACK_WEBHOOK);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setDoOutput(true);
             conn.setRequestProperty("Content-Type", "application/json");
@@ -82,13 +83,11 @@ public class NotificationService {
             String payload = "{\"channel\":\"" + channel + "\",\"text\":\"" + message + "\"}";
             // SECURITY: No escaping of message content - JSON injection possible
             
-            OutputStream os = conn.getOutputStream();
-            os.write(payload.getBytes("UTF-8"));
-            os.flush();
-            // BUG: OutputStream never closed
+            try (OutputStream os = conn.getOutputStream()) {
+                os.write(payload.getBytes("UTF-8"));
+            }
             
             int responseCode = conn.getResponseCode();
-            // Connection never closed
             
             return responseCode == 200;
             
@@ -96,6 +95,10 @@ public class NotificationService {
             // Swallow all exceptions
             System.err.println("Slack notification failed: " + e.getMessage());
             return false;
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
+            }
         }
     }
     
