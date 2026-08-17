@@ -22,7 +22,7 @@
 13. **due_date stored as String** - issue #110 created; awaiting maintainer input before schema migration
 14. **[DONE] GET /api/users no pagination** - PR #122 open
 15. **[DONE] GET /api/projects no pagination** - PR #122 open
-16. **[DONE] NotificationService.sendSlackNotification()** - OutputStream and HttpURLConnection resource leak - PR open (perf-assist/fix-notification-connection-leak)
+16. **[DONE] NotificationService.sendSlackNotification()** - OutputStream and HttpURLConnection resource leak - PR #131 open
 
 ## Work In Progress
 None.
@@ -44,13 +44,14 @@ None.
 - 2026-08-13 run 14: PR #122 created - `perf: add pagination to GET /api/users and GET /api/projects`
 - 2026-08-14 run 15: Task 2 deep scan - no new major opportunities; Task 5 - no issues; Task 7 - updated monthly summary
 - 2026-08-15 run 16: Task 4 - checked all 6 open PRs, still open, no CI failures; Task 7 - updated monthly summary
-- 2026-08-16 run 17: PR created (perf-assist/fix-notification-connection-leak) - `perf: close OutputStream and disconnect HttpURLConnection in sendSlackNotification()`; Task 7 - updated monthly summary
+- 2026-08-16 run 17: PR #131 created - `perf: close OutputStream and disconnect HttpURLConnection in sendSlackNotification()`; Task 7 - updated monthly summary
+- 2026-08-17 run 18: Task 4 - checked all 7 open PRs, still open, no CI failures; Task 7 - updated monthly summary
 
 ## Backlog Cursor
 All identified opportunities addressed. Remaining: #13 (due_date migration, awaiting maintainer).
 
 ## Last Run Tasks
-- 2026-08-16 run 17: Task 3 (NotificationService resource leak fix PR), Task 7 (monthly summary)
+- 2026-08-17 run 18: Task 4 (PR check), Task 7 (monthly summary)
 
 ## Previously Checked Off Items (by maintainer)
 None yet.
