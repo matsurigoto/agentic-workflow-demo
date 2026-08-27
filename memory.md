@@ -22,44 +22,27 @@
 13. **due_date stored as String** - issue #110 created; awaiting maintainer input before schema migration
 14. **[DONE] GET /api/users no pagination** - PR #122 open
 15. **[DONE] GET /api/projects no pagination** - PR #122 open
-16. **[DONE] NotificationService.sendSlackNotification()** - OutputStream and HttpURLConnection resource leak - PR #131 open
+16. **[DONE] NotificationService.sendSlackNotification()** - resource leak - PR #131 open
 
 ## Work In Progress
 None.
 
-## Completed Work
-- 2026-08-01 run 1: PR - `perf: replace full-table-scan statistics with aggregate queries`
-- 2026-08-01 run 2: PR - `perf: consolidate project stats query and fix auto-assign N+1`
-- 2026-08-02 run 3: PR - `perf: add pagination to GET /api/tasks`
-- 2026-08-03 run 4: PR - `perf: fix resource leaks in DatabaseHelper using try-with-resources`
-- 2026-08-04 run 5: PR - `perf: push overdue-task filtering to DB, remove O(n²) sort`
-- 2026-08-05 run 6: PR - `perf: replace SimpleDateFormat with thread-safe DateTimeFormatter in DateUtils`
-- 2026-08-06 run 7: PR #90 - `perf: fix findActiveTasks/findActiveTasksByAssignee to exclude cancelled tasks`
-- 2026-08-07 run 8: PR #94 - `perf: fix thread-unsafe singleton and InputStream leak in ConfigManager`
-- 2026-08-08 run 9: PR #100 - `perf: push role+active filter to DB and replace N+1 deactivation with bulk update in UserService`
-- 2026-08-09 run 10: PR #105 - `perf: replace double findAll() in generateWeeklyReport() with COUNT queries`
+## Completed Work (recent)
+- 2026-08-16 run 17: PR #131 created - fix resource leaks in sendSlackNotification()
+- 2026-08-13 run 14: PR #122 created - pagination for /api/users and /api/projects
+- 2026-08-11 run 12: PR #114 created - saveAll() batch insert in importTasks()
 - 2026-08-10 run 11: Issue #110 created for due_date String → typed DATE migration
-- 2026-08-11 run 12: PR #114 (perf-assist/batch-import-saveall) - `perf: replace N individual saves in importTasks() with saveAll() batch insert`
-- 2026-08-12 run 13: Task 2 scan - found 2 new pagination gaps (users, projects); Task 4 - checked PRs, no CI failures
-- 2026-08-13 run 14: PR #122 created - `perf: add pagination to GET /api/users and GET /api/projects`
-- 2026-08-14 run 15: Task 2 deep scan - no new major opportunities; Task 5 - no issues; Task 7 - updated monthly summary
-- 2026-08-15 run 16: Task 4 - checked all 6 open PRs, still open, no CI failures; Task 7 - updated monthly summary
-- 2026-08-16 run 17: PR #131 created - `perf: close OutputStream and disconnect HttpURLConnection in sendSlackNotification()`; Task 7 - updated monthly summary
-- 2026-08-17 run 18: Task 4 - checked all 7 open PRs, still open, no CI failures; Task 7 - updated monthly summary
-- 2026-08-18 run 19: Task 4 - checked all 7 open PRs, still open, no CI failures; Task 7 - updated monthly summary
-- 2026-08-20 run 21: Task 4 (PR check - all 7 PRs still open), Task 7 (monthly summary)
-- 2026-08-21 run 22: Task 2 (quick scan - no new opportunities), Task 4 (all 7 PRs still open), Task 7 (monthly summary)
-- 2026-08-22 run 23: Task 4 (all 7 PRs still open), Task 7 (monthly summary)
-- 2026-08-23 run 24: Task 4 (PR check - all 7 PRs still open), Task 7 (monthly summary)
-- 2026-08-24 run 25: Task 4 (PR check - all 7 PRs still open), Task 7 (monthly summary)
-- 2026-08-25 run 26: Task 4 (PR check - all 7 PRs still open), Task 7 (monthly summary)
-- 2026-08-26 run 27: Task 4 (PR check - all 7 PRs still open), Task 7 (monthly summary)
+- 2026-08-09 run 10: PR #105 - replace double findAll() with COUNT queries
+- 2026-08-08 run 9: PR #100 - UserService DB-filter + bulk update
+- 2026-08-07 run 8: PR #94 - ConfigManager thread-safe singleton + InputStream fix
+- 2026-08-06 run 7: PR #90 - findActiveTasks() exclude cancelled tasks
+- Runs 1-6 (Aug 1-5): PRs for statistics, N+1, pagination, resource leaks, DateUtils, overdue sort
 
 ## Backlog Cursor
 All identified opportunities addressed. Remaining: #13 (due_date migration, awaiting maintainer).
 
 ## Last Run Tasks
-- 2026-08-26 run 27: Task 4 (PR check - all 7 PRs still open), Task 7 (monthly summary)
+- 2026-08-27 run 28: Task 4 (PR check - all 7 PRs still open), Task 7 (monthly summary)
 
 ## Previously Checked Off Items (by maintainer)
 None yet.
