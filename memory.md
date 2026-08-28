@@ -42,7 +42,7 @@ None.
 All identified opportunities addressed. Remaining: #13 (due_date migration, awaiting maintainer).
 
 ## Last Run Tasks
-- 2026-08-27 run 28: Task 4 (PR check - all 7 PRs still open), Task 7 (monthly summary)
+- 2026-08-28 run 29: Task 4 (PR check - all 7 PRs still open), Task 7 (monthly summary)
 
 ## Previously Checked Off Items (by maintainer)
 None yet.
