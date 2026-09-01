@@ -28,6 +28,7 @@
 None.
 
 ## Completed Work (recent)
+- 2026-09-01 run: Task 7 - Closed Aug issue #51, created Sep monthly summary
 - 2026-08-16 run 17: PR #131 created - fix resource leaks in sendSlackNotification()
 - 2026-08-13 run 14: PR #122 created - pagination for /api/users and /api/projects
 - 2026-08-11 run 12: PR #114 created - saveAll() batch insert in importTasks()
@@ -35,14 +36,13 @@ None.
 - 2026-08-09 run 10: PR #105 - replace double findAll() with COUNT queries
 - 2026-08-08 run 9: PR #100 - UserService DB-filter + bulk update
 - 2026-08-07 run 8: PR #94 - ConfigManager thread-safe singleton + InputStream fix
-- 2026-08-06 run 7: PR #90 - findActiveTasks() exclude cancelled tasks
-- Runs 1-6 (Aug 1-5): PRs for statistics, N+1, pagination, resource leaks, DateUtils, overdue sort
+- 2026-08-06 run 7: PR #90 - findActiveTasks exclude cancelled tasks
 
 ## Backlog Cursor
 All identified opportunities addressed. Remaining: #13 (due_date migration, awaiting maintainer).
 
 ## Last Run Tasks
-- 2026-08-31 run 32: Task 4 (PR check - all 7 PRs still open), Task 7 (monthly summary)
+- 2026-09-01: Task 4 (PR check - all 7 PRs still open), Task 7 (monthly summary - closed Aug #51, created Sep)
 
 ## Previously Checked Off Items (by maintainer)
 None yet.
